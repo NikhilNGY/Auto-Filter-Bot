@@ -175,4 +175,4 @@ async def save_template(client, message):
     try:
         template = message.text.split(" ", 1)[1]
     except IndexError:
-        return await message.reply("<b>Template missing</b
+        return await message.reply("<b>Template missing</b>")
