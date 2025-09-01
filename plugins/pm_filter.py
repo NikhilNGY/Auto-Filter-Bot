@@ -202,5 +202,7 @@ async def auto_filter(client, msg, spoll=False):
             else:
                 btn.insert(0, [InlineKeyboardButton("♻️ Send All", callback_data=f"send_all#{key}")])
 
-        await message.reply_text(
-            script.START_TXT.format(message.from_user
+        await message.reply(
+    script.START_TXT.format(message.from_user.first_name),
+    parse_mode="html"
+)
