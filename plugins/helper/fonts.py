@@ -1,7 +1,7 @@
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery 
-from plugins.helper.Rahul import Fonts
+from plugins.helper.fants import Fonts
 
 @Client.on_message(filters.private & filters.command(["font"]))
 async def style_buttons(c, m, cb=False):
@@ -21,7 +21,7 @@ async def style_buttons(c, m, cb=False):
         reply = await m.reply_text(f"{font(title)}")
         messages.append(reply)
 
-    d=await m.reply_text(text="<b>ʙʏ : @TechifyBots</b>")
+    d=await m.reply_text(text="<b>ʙʏ : @KR_PICTURE</b>")
 
     async def delete_messages():
         for msg in messages:
