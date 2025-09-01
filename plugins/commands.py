@@ -77,9 +77,7 @@ async def start(client:Client, message):
             ],[
                 InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=f'https://t.me/+x6OfRDdUPrUwZTZl'),
                 InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=f'https://t.me/+fDkIGNmk5BU5ODVl')
-            ],[
-                InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='buy_premium')
-        ]]   
+            ]]   
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_text(script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
             reply_markup=reply_markup,
@@ -105,9 +103,7 @@ async def start(client:Client, message):
             ],[
                 InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=f'https://t.me/+x6OfRDdUPrUwZTZl'),
                 InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=f'https://t.me/+fDkIGNmk5BU5ODVl')
-            ],[
-                InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='buy_premium')
-        ]]
+            ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_text(
             text=script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
