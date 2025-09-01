@@ -4,7 +4,7 @@ import aiohttp
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-UPLOAD_URL = "https://envs.sh"
+UPLOAD_URL = "https://envs.sh/t3L.jpg"
 
 
 async def upload_image_aiohttp(image_path: str) -> str | None:
