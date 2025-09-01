@@ -78,7 +78,7 @@ async def start(client:Client, message):
                 InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=f'https://t.me/+x6OfRDdUPrUwZTZl'),
                 InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=f'https://t.me/+fDkIGNmk5BU5ODVl')
             ],[
-                InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='help')
+                InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='buy_premium')
         ]]   
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_text(script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
@@ -90,7 +90,7 @@ async def start(client:Client, message):
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help", "buy_premium"]:
         if message.command[1] == "buy_premium":
             btn = [[
-                InlineKeyboardButton('📸 sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ 📸', url=USERNAME)
+                InlineKeyboardButton('• Aɴʏ Iꜱꜱᴜᴇ Cᴏɴᴛᴀᴄᴛ •', url=USERNAME)
             ],[
                 InlineKeyboardButton('🗑 ᴄʟᴏsᴇ 🗑', callback_data='close_data')
             ]]            
@@ -106,7 +106,7 @@ async def start(client:Client, message):
                 InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=f'https://t.me/+x6OfRDdUPrUwZTZl'),
                 InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=f'https://t.me/+fDkIGNmk5BU5ODVl')
             ],[
-                InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='help')
+                InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='buy_premium')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_text(
