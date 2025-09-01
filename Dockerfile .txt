@@ -1,7 +1,7 @@
 FROM python:3.10
 
 # Set working directory
-WORKDIR /TamilanBotsZ
+WORKDIR /TechifyBots
 
 # Copy dependency file first (for caching)
 COPY requirements.txt ./
