@@ -70,7 +70,7 @@ async def send_for_index(bot, message):
 @Client.on_message(filters.command('channel'))
 async def channel_info(bot, message):
     if message.from_user.id not in ADMINS:
-        await message.reply('ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ... 😑')
+        await message.reply('ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ... 😑 Tᴇᴀᴍ: @KR_Picture')
         return
     ids = CHANNELS
     if not ids:
