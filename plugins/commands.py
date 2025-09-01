@@ -88,7 +88,7 @@ async def start(client:Client, message):
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help", "buy_premium"]:
         if message.command[1] == "buy_premium":
             btn = [[
-                InlineKeyboardButton('• Aɴʏ Iꜱꜱᴜᴇ Cᴏɴᴛᴀᴄᴛ •', url=USERNAME)
+                InlineKeyboardButton('• Aɴʏ Iꜱꜱᴜᴇ Cᴏɴᴛᴀᴄᴛ •', url=None)
             ],[
                 InlineKeyboardButton('🗑 ᴄʟᴏsᴇ 🗑', callback_data='close_data')
             ]]            
