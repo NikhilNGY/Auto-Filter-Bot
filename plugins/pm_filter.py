@@ -167,16 +167,18 @@ async def next_page(client, query: CallbackQuery):
     links = ""
 
     if settings["link"]:
-        for file_num, file in enumerate(files, start=offset + 1):
-            links += (
-                f"<b>\n\n{file_num}. "
-                f"<a href=https://t.me/{temp.U_NAME}?start=file_{grp_id}_{file.file_id}>"
-                f"[{get_size(file.file_size)}] "
-                f"{' '.join(filter(lambda x: not x.startswith('[') "
-                f"and not x.startswith('@') "
-                f"and not x.startswith('www.'), file.file_name.split()))}</a></b>"
-                )
-              )
+    for file_num, file in enumerate(files, start=offset + 1):
+        clean_name = " ".join(
+            filter(
+                lambda x: not (x.startswith("[") or x.startswith("@") or x.startswith("www.")),
+                file.file_name.split()
+            )
+        )
+        links += (
+            f"<b>\n\n{file_num}. "
+            f"<a href=https://t.me/{temp.U_NAME}?start=file_{grp_id}_{file.file_id}>"
+            f"[{get_size(file.file_size)}] {clean_name}</a></b>"
+        )
     else:
         btn = [
             [InlineKeyboardButton(
@@ -319,15 +321,18 @@ async def lang_search(client: Client, query: CallbackQuery):
     btn = []
 
     if settings["link"]:
-        for file_num, file in enumerate(files, start=1):
-            links += (
-                f"<b>\n\n{file_num}. "
-                f"<a href=https://t.me/{temp.U_NAME}?start=file_{group_id}_{file.file_id}>"
-                f"[{get_size(file.file_size)}] "
-                f"{' '.join(filter(lambda x: not x.startswith('[') "
-                f"and not x.startswith('@') "
-                f"and not x.startswith('www.'), file.file_name.split()))}</a></b>"
+    for file_num, file in enumerate(files, start=1):
+        clean_name = " ".join(
+            filter(
+                lambda x: not (x.startswith("[") or x.startswith("@") or x.startswith("www.")),
+                file.file_name.split()
             )
+        )
+        links += (
+            f"<b>\n\n{file_num}. "
+            f"<a href=https://t.me/{temp.U_NAME}?start=file_{group_id}_{file.file_id}>"
+            f"[{get_size(file.file_size)}] {clean_name}</a></b>"
+        )
     else:
         btn = [
             [InlineKeyboardButton(
