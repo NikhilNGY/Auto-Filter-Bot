@@ -175,7 +175,8 @@ async def next_page(client, query: CallbackQuery):
                 f"{' '.join(filter(lambda x: not x.startswith('[') "
                 f"and not x.startswith('@') "
                 f"and not x.startswith('www.'), file.file_name.split()))}</a></b>"
-            )
+                )
+              )
     else:
         btn = [
             [InlineKeyboardButton(
