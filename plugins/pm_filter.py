@@ -30,9 +30,14 @@ async def pm_search(client, message):
         await message.reply_text("⚠️ ꜱᴏʀʀʏ ɪ ᴄᴀɴ'ᴛ ᴡᴏʀᴋ ɪɴ ᴘᴍ")
     
 @Client.on_message(filters.group & filters.text & filters.incoming)
+@Client.on_message(filters.group & filters.text & filters.incoming)
 async def group_search(client, message):
+    # Add this check at the beginning
+    if not message.from_user:
+        return  # Skip processing if no sender
     chat_id = message.chat.id
     settings = await get_settings(chat_id)
+    # ... rest of your function
     if settings["auto_filter"]:  
         if 'hindi' in message.text.lower() or 'tamil' in message.text.lower() or 'telugu' in message.text.lower() or 'malayalam' in message.text.lower() or 'kannada' in message.text.lower() or 'english' in message.text.lower() or 'gujarati' in message.text.lower(): 
             return await auto_filter(client, message)
