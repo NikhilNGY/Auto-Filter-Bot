@@ -576,6 +576,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
 async def auto_filter(client, msg, spoll=False):
     if not spoll:
         message = msg
+        # Add this null check at the beginning
+        if not message.from_user:
+            return  # Exit if there's no sender
+        
         search = message.text
         chat_id = message.chat.id
         settings = await get_settings(chat_id)
@@ -587,13 +591,20 @@ async def auto_filter(client, msg, spoll=False):
     else:
         settings = await get_settings(msg.message.chat.id)
         message = msg.message.reply_to_message  # msg will be callback query
+        # Add null check here too
+        if not message.from_user:
+            return
+        
         search, files, offset, total_results = spoll
+    
+    # Rest of your function remains the same...
     grp_id = message.chat.id
     req = message.from_user.id if message.from_user else 0
     key = f"{message.chat.id}-{message.id}"
     temp.FILES_ID[f"{message.chat.id}-{message.id}"] = files
     pre = 'filep' if settings['file_secure'] else 'file'
-    temp.CHAT[message.from_user.id] = message.chat.id
+    temp.CHAT[message.from_user.id] = message.chat.id  # This line was causing the error
+    # ... rest of your function
     settings = await get_settings(message.chat.id)
     del_msg = f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>" if settings["auto_delete"] else ''
     links = ""
