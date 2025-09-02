@@ -802,6 +802,8 @@ async def cb_handler(client: Client, query: CallbackQuery):
             return        
         await query.answer(url=f"https://t.me/{temp.U_NAME}?start=allfiles_{query.message.chat.id}_{key}")
 
+                   ☆☆☆☆☆☆☆♡◇♡■■
+
 async def auto_filter(client, msg, spoll=False):
     if not spoll:
         message = msg
