@@ -371,99 +371,192 @@ async def lang_search(client: Client, query: CallbackQuery):
         reply_markup=InlineKeyboardMarkup(btn)
                    )
 
-☆☆☆☆☆
-
 @Client.on_callback_query(filters.regex(r"^lang_next"))
-async def lang_next_page(bot, query):
-    ident, req, key, lang, l_offset, offset = query.data.split("#")
+async def lang_next_page(client: Client, query: CallbackQuery):
+    # Expected callback_data format:
+    # "lang_next#<req>#<key>#<lang>#<l_offset>#<offset>"
+    try:
+        _, req, key, lang, l_offset, offset = query.data.split("#")
+    except ValueError:
+        # malformed callback data
+        return await query.answer("⚠️ Invalid data", show_alert=True)
+
     if int(req) != query.from_user.id:
-        return await query.answer(script.ALRT_TXT, show_alert=True)	
+        return await query.answer(script.ALRT_TXT, show_alert=True)
+
     try:
         l_offset = int(l_offset)
-    except:
+    except (ValueError, TypeError):
         l_offset = 0
+
+    try:
+        offset = int(offset)
+    except (ValueError, TypeError):
+        offset = 0
+
     search = BUTTONS.get(key)
     cap = CAP.get(key)
     grp_id = query.message.chat.id
-    settings = await get_settings(query.message.chat.id)
-    del_msg = f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>" if settings["auto_delete"] else ''
+    settings = await get_settings(grp_id)
+
+    del_msg = (
+        f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ "
+        f"<code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>"
+        if settings.get("auto_delete") else ''
+    )
+
     if not search:
-        await query.answer(f"sᴏʀʀʏ '{lang.title()}' ʟᴀɴɢᴜᴀɢᴇ ꜰɪʟᴇs ɴᴏᴛ ꜰᴏᴜɴᴅ 😕", show_alert=1)
+        await query.answer(f"sᴏʀʀʏ '{lang.title()}' ʟᴀɴɢᴜᴀɢᴇ ꜰɪʟᴇs ɴᴏᴛ ꜰᴏᴜɴᴅ 😕", show_alert=True)
         return
+
     files, n_offset, total = await get_search_results(search, offset=l_offset, lang=lang)
     if not files:
+        # no files found on this page - silently return
         return
+
     temp.FILES_ID[key] = files
+
     try:
         n_offset = int(n_offset)
-    except:
+    except (ValueError, TypeError):
         n_offset = 0
+
     links = ""
-    if settings['link']:
-        btn = []
-        for file_num, file in enumerate(files, start=l_offset+1):
-            links += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), file.file_name.split()))}</a></b>"""
+    btn = []
+
+    if settings.get('link'):
+        for file_num, file in enumerate(files, start=l_offset + 1):
+            safe_name = ' '.join(filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'), file.file_name.split()))
+            links += (
+                f"<b>\n\n{file_num}. "
+                f"<a href=https://t.me/{temp.U_NAME}?start=file_{grp_id}_{file.file_id}>"
+                f"[{get_size(file.file_size)}] {safe_name}</a></b>"
+            )
     else:
-        btn = [[
-            InlineKeyboardButton(text=f"🔗 {get_size(file.file_size)}≽ {get_name(file.file_name)}", callback_data=f'file#{file.file_id}')
-        ]
+        # keep callback format consistent with other handlers: 'files#<req>#<file_id>'
+        reqnxt = query.from_user.id if query.from_user else 0
+        btn = [
+            [InlineKeyboardButton(
+                text=f"🔗 {get_size(file.file_size)} ≽ {get_name(file.file_name)}",
+                callback_data=f'files#{reqnxt}#{file.file_id}'
+            )]
             for file in files
         ]
-    if not settings['is_verify']:
-        btn.insert(0,[
-            InlineKeyboardButton("♻️ sᴇɴᴅ ᴀʟʟ ♻️", url=await get_shortlink(f'https://t.me/{temp.U_NAME}?start=allfiles_{query.message.chat.id}_{key}', grp_id)),
+
+    # top action buttons (send all / buy)
+    if not settings.get('is_verify'):
+        # use get_shortlink asynchronously for URL
+        short_link = await get_shortlink(f'https://t.me/{temp.U_NAME}?start=allfiles_{grp_id}_{key}', grp_id)
+        btn.insert(0, [
+            InlineKeyboardButton("♻️ sᴇɴᴅ ᴀʟʟ ♻️", url=short_link),
             InlineKeyboardButton("🥇ʙᴜʏ🥇", url=f"https://t.me/{temp.U_NAME}?start=buy_premium")
         ])
     else:
-        btn.insert(0,[
+        btn.insert(0, [
             InlineKeyboardButton("♻️ sᴇɴᴅ ᴀʟʟ ♻️", callback_data=f"send_all#{key}"),
             InlineKeyboardButton("🥇ʙᴜʏ🥇", url=f"https://t.me/{temp.U_NAME}?start=buy_premium")
         ])
-    if 0 < l_offset <= MAX_BTN:
+
+    # compute back offsets
+    if 0 < l_offset <= int(MAX_BTN):
         b_offset = 0
     elif l_offset == 0:
         b_offset = None
     else:
-        b_offset = l_offset - MAX_BTN
+        b_offset = l_offset - int(MAX_BTN)
+
+    # page buttons
+    try:
+        total_pages = math.ceil(int(total) / int(MAX_BTN))
+        current_page = math.ceil(int(l_offset) / int(MAX_BTN)) + 1
+    except Exception:
+        total_pages = 1
+        current_page = 1
+
     if n_offset == 0:
-        btn.append(
-            [InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"lang_next#{req}#{key}#{lang}#{b_offset}#{offset}"),
-             InlineKeyboardButton(f"{math.ceil(int(l_offset) / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}", callback_data="buttons")]
-        )
+        btn.append([
+            InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"lang_next#{req}#{key}#{lang}#{b_offset}#{offset}"),
+            InlineKeyboardButton(f"{current_page}/{total_pages}", callback_data="buttons")
+        ])
     elif b_offset is None:
-        btn.append(
-            [InlineKeyboardButton(f"{math.ceil(int(l_offset) / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}", callback_data="buttons"),
-             InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"lang_next#{req}#{key}#{lang}#{n_offset}#{offset}")]
-        )
+        btn.append([
+            InlineKeyboardButton(f"{current_page}/{total_pages}", callback_data="buttons"),
+            InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"lang_next#{req}#{key}#{lang}#{n_offset}#{offset}")
+        ])
     else:
-        btn.append(
-            [InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"lang_next#{req}#{key}#{lang}#{b_offset}#{offset}"),
-             InlineKeyboardButton(f"{math.ceil(int(l_offset) / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}", callback_data="buttons"),
-             InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"lang_next#{req}#{key}#{lang}#{n_offset}#{offset}")]
-        )
+        btn.append([
+            InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"lang_next#{req}#{key}#{lang}#{b_offset}#{offset}"),
+            InlineKeyboardButton(f"{current_page}/{total_pages}", callback_data="buttons"),
+            InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"lang_next#{req}#{key}#{lang}#{n_offset}#{offset}")
+        ])
+
+    # always include a back to main page button
     btn.append([InlineKeyboardButton(text="⪻ ʙᴀᴄᴋ ᴛᴏ ᴍᴀɪɴ ᴘᴀɢᴇ", callback_data=f"next_{req}_{key}_{offset}")])
-    await query.message.edit_text(cap + links + del_msg, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
+
+    # edit the message (use HTML parse mode)
+    try:
+        await query.message.edit_text(cap + links + del_msg, reply_markup=InlineKeyboardMarkup(btn),
+                                      disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
+    except Exception:
+        # if edit fails (e.g., message deleted), ignore
+        pass
 
 @Client.on_callback_query(filters.regex(r"^spol"))
-async def advantage_spoll_choker(bot, query):
-    _, id, user = query.data.split('#')
+async def advantage_spoll_choker(client: Client, query: CallbackQuery):
+    # Expected callback_data format: "spol#<id>#<user>"
+    try:
+        _, movie_id, user = query.data.split('#')
+    except ValueError:
+        return await query.answer("⚠️ Invalid data", show_alert=True)
+
     if int(user) != 0 and query.from_user.id != int(user):
         return await query.answer(script.ALRT_TXT, show_alert=True)
-    movie = await get_poster(id, id=True)
-    search = movie.get('title')
+
+    # fetch poster/details (get_poster should be async)
+    try:
+        movie = await get_poster(movie_id, id=True)
+    except Exception:
+        movie = None
+
+    if not movie:
+        await query.answer("❌ Could not fetch movie data", show_alert=True)
+        return
+
+    search = movie.get('title') or movie.get('name') or None
+    if not search:
+        await query.answer("❌ Movie title not found", show_alert=True)
+        return
+
     await query.answer('ᴄʜᴇᴄᴋɪɴɢ ɪɴ ᴍʏ ᴅᴀᴛᴀʙᴀꜱᴇ 🌚')
+
     files, offset, total_results = await get_search_results(search)
     if files:
         k = (search, files, offset, total_results)
-        await auto_filter(bot, query, k)
-    else:
-        k = await query.message.edit(script.NO_RESULT_TXT)
-        await asyncio.sleep(60)
-        await k.delete()
+        # call auto_filter in the same pattern you used elsewhere — some handlers pass different args
+        # Here we try to follow your earlier usage: await auto_filter(bot, query, k)
         try:
-            await query.message.reply_to_message.delete()
-        except:
+            await auto_filter(client, query, k)
+        except TypeError:
+            # fallback if auto_filter expects only (client, message)
+            try:
+                await auto_filter(client, query.message, k)
+            except Exception:
+                pass
+    else:
+        try:
+            kmsg = await query.message.edit_text(script.NO_RESULT_TXT)
+            await asyncio.sleep(60)
+            await kmsg.delete()
+        except Exception:
             pass
+        # try to remove the replied-to message if exists
+        try:
+            if query.message.reply_to_message:
+                await query.message.reply_to_message.delete()
+        except Exception:
+            pass
+
+                   ☆☆☆☆☆■♤♡
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
