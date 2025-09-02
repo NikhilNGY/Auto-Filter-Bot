@@ -166,7 +166,7 @@ async def next_page(client, query: CallbackQuery):
     btn = []
     links = ""
 
-    if settings["link"]:
+if settings["link"]:
     for file_num, file in enumerate(files, start=offset + 1):
         clean_name = " ".join(
             filter(
@@ -176,7 +176,7 @@ async def next_page(client, query: CallbackQuery):
         )
         links += (
             f"<b>\n\n{file_num}. "
-            f"<a href=https://t.me/{temp.U_NAME}?start=file_{grp_id}_{file.file_id}>"
+            f"<a href=https://t.me/{temp.U_NAME}?start=file_{group_id}_{file.file_id}>"
             f"[{get_size(file.file_size)}] {clean_name}</a></b>"
         )
     else:
