@@ -556,253 +556,404 @@ async def advantage_spoll_choker(client: Client, query: CallbackQuery):
         except Exception:
             pass
 
-                   ☆☆☆☆☆■♤♡
-
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
-    if query.data == "close_data":
-        try:
-            user = query.message.reply_to_message.from_user.id
-        except:
-            user = query.from_user.id
-        if int(user) != 0 and query.from_user.id != int(user):
-            return await query.answer(script.ALRT_TXT, show_alert=True)
-        await query.answer("ᴛʜᴀɴᴋs ꜰᴏʀ ᴄʟᴏsᴇ 🙈")
-        await query.message.delete()
-        try:
-            await query.message.reply_to_message.delete()
-        except:
-            pass
+    """Universal callback-query handler (safe, modernized)."""
+    data = query.data or ""
+    user_id = query.from_user.id if query.from_user else None
 
-    elif query.data.startswith("checksub"):
-        ident, file_id = query.data.split("#")
+    # ----------------------
+    # Helper to safely get replied user id
+    # ----------------------
+    def _replied_user_id(msg):
+        try:
+            if msg and msg.reply_to_message and msg.reply_to_message.from_user:
+                return msg.reply_to_message.from_user.id
+        except Exception:
+            pass
+        return None
+
+    # ----------------------
+    # close_data: only owner or same user can close
+    # ----------------------
+    if data == "close_data":
+        owner = _replied_user_id(query.message) or user_id or 0
+        try:
+            if int(owner) != 0 and user_id != int(owner):
+                return await query.answer(script.ALRT_TXT, show_alert=True)
+        except Exception:
+            return await query.answer(script.ALRT_TXT, show_alert=True)
+
+        await query.answer("ᴛʜᴀɴᴋs ꜰᴏʀ ᴄʟᴏsᴇ 🙈")
+        # delete the inline message and the replied message if available
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+        try:
+            if query.message.reply_to_message:
+                await query.message.reply_to_message.delete()
+        except Exception:
+            pass
+        return
+
+    # ----------------------
+    # checksub#<file_id> : verify subscription and send file
+    # ----------------------
+    if data.startswith("checksub"):
+        parts = data.split("#", 1)
+        if len(parts) != 2:
+            return await query.answer("⚠️ Invalid callback data", show_alert=True)
+        _, file_id = parts
+
         settings = await get_settings(query.message.chat.id)
+        # if auth channel set, ensure user subscribed
         if AUTH_CHANNEL and not await is_req_subscribed(client, query):
-            await query.answer("ɪ ʟɪᴋᴇ ʏᴏᴜʀ sᴍᴀʀᴛɴᴇss ʙᴜᴛ ᴅᴏɴ'ᴛ ʙᴇ ᴏᴜᴇʀsᴍᴀʀᴛ 😒\nꜰɪʀsᴛ ᴊᴏɪɴ ᴏᴜʀ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ 😒", show_alert=True)
-            return         
+            return await query.answer(
+                "ɪ ʟɪᴋᴇ ʏᴏᴜʀ sᴍᴀʀᴛɴᴇss ʙᴜᴛ ᴅᴏɴ'ᴛ ʙᴇ ᴏᴜᴇʀsᴍᴀʀᴛ 😒\nꜰɪʀsᴛ ᴊᴏɪɴ ᴏᴜʀ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ 😒",
+                show_alert=True
+            )
+
+        # get file details from DB
         files_ = await get_file_details(file_id)
         if not files_:
-            return await query.answer('ɴᴏ sᴜᴄʜ ꜰɪʟᴇ ᴇxɪsᴛs 🚫')
-        files = files_[0]
-        CAPTION = settings['caption']
-        f_caption = CAPTION.format(
-            file_name = files.file_name,
-            file_size = get_size(files.file_size),
-            file_caption = files.caption
-        )
-        await client.send_cached_media(
-            chat_id=query.from_user.id,
-            file_id=file_id,
-            caption=f_caption,
-            protect_content=settings['file_secure'],
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton('❌ ᴄʟᴏsᴇ ❌', callback_data='close_data')
-                    ]
-                ]
+            return await query.answer('ɴᴏ sᴜᴄʜ ꜰɪʟᴇ ᴇxɪsᴛs 🚫', show_alert=True)
+
+        file = files_[0]
+        CAPTION = settings.get('caption', '{file_name}\n{file_size}\n{file_caption}')
+        try:
+            f_caption = CAPTION.format(
+                file_name=file.file_name,
+                file_size=get_size(file.file_size),
+                file_caption=(file.caption or "")
             )
-        )
+        except Exception:
+            f_caption = f"{file.file_name}\n{get_size(file.file_size)}"
 
-    elif query.data.startswith("stream"):
-        user_id = query.from_user.id
+        # send cached media to user (protect_content per settings)
+        try:
+            await client.send_cached_media(
+                chat_id=user_id,
+                file_id=file_id,
+                caption=f_caption,
+                protect_content=bool(settings.get('file_secure', False)),
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton('❌ ᴄʟᴏsᴇ ❌', callback_data='close_data')]]
+                )
+            )
+        except Exception as e:
+            logger.exception("send_cached_media failed: %s", e)
+            return await query.answer("Failed to send file. It may be deleted.", show_alert=True)
+        return
+
+    # ----------------------
+    # stream#<file_id> : prepare streaming + download links (premium only)
+    # ----------------------
+    if data.startswith("stream"):
+        # permission: premium only
         if not await db.has_premium_access(user_id):
-            d=await query.message.reply("<b>💔 ᴛʜɪꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴏɴʟʏ ꜰᴏʀ ʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ.\n\nɪꜰ ʏᴏᴜ ᴡᴀɴᴛ ʙᴏᴛ ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ ᴛʜᴇɴ ꜱᴇɴᴅ /plan</b>")
+            d = await query.message.reply_text(
+                "<b>💔 ᴛʜɪꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴏɴʟʏ ꜰᴏʀ ʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ.\n\nɪꜰ ʏᴏᴜ ᴡᴀɴᴛ ʙᴏᴛ ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ ᴛʜᴇɴ ꜱᴇɴᴅ /plan</b>", parse_mode=enums.ParseMode.HTML
+            )
             await asyncio.sleep(120)
-            await d.delete()
-            return
-        file_id = query.data.split('#', 1)[1]
-        NOBITA = await client.send_cached_media(
-            chat_id=BIN_CHANNEL,
-            file_id=file_id)
-        online = f"https://{URL}/watch/{NOBITA.id}?hash={get_hash(NOBITA)}"
-        download = f"https://{URL}/{NOBITA.id}?hash={get_hash(NOBITA)}"
-        btn= [[
-            InlineKeyboardButton("ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ", url=online),
-            InlineKeyboardButton("ꜰᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=download)
-        ],[
-            InlineKeyboardButton('🧿 Wᴀᴛᴄʜ ᴏɴ ᴛᴇʟᴇɢʀᴀᴍ 🖥', web_app=WebAppInfo(url=online))
-        ]]
-        await query.edit_message_reply_markup(
-            reply_markup=InlineKeyboardMarkup(btn)
-        )
-
-    elif query.data == "buttons":
-        await query.answer("ɴᴏ ᴍᴏʀᴇ ᴘᴀɢᴇs 😊", show_alert=True)
-
-    elif query.data == "pages":
-        await query.answer("ᴛʜɪs ɪs ᴘᴀɢᴇs ʙᴜᴛᴛᴏɴ 😅")
-
-    elif query.data.startswith("lang_art"):
-        _, lang = query.data.split("#")
-        await query.answer(f"ʏᴏᴜ sᴇʟᴇᴄᴛᴇᴅ {lang.title()} ʟᴀɴɢᴜᴀɢᴇ ⚡️", show_alert=True)
-  
-    elif query.data == "start":
-        buttons = [[
-                        InlineKeyboardButton('• Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ •', url='https://t.me/sandalwood_kannada_moviesz')
-        ], [
-            InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url='https://t.me/+x6OfRDdUPrUwZTZl'),
-            InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url='https://t.me/+fDkIGNmk5BU5ODVl')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await query.message.edit_text(
-            text=script.START_TXT.format(query.from_user.mention, get_status(), query.from_user.id),
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )      
-    elif query.data == "features":
-        buttons = [[
-            InlineKeyboardButton('📸 ɪᴍᴀɢᴇ', callback_data='uploader'),
-            InlineKeyboardButton('🆎️ ꜰᴏɴᴛ', callback_data='font')    
-        ], [ 
-            InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='start')
-        ]] 
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await query.message.edit_text(                     
-            text=script.HELP_TXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-
-    elif query.data.startswith("techifybots"):
-        ident, keyword = query.data.split("#")
-        await query.message.edit_text(f"<b>Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs ғᴏʀ ʏᴏᴜʀ ᴏ̨ᴜᴇʀʏ {keyword} ᴏɴ DB... Pʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>")
-        files, total = await get_bad_files(keyword)
-        await query.message.edit_text(f"<b>Fᴏᴜɴᴅ {total} Fɪʟᴇs ғᴏʀ ʏᴏᴜʢ ᴏ̨ᴜᴇʀʏ {keyword} !\n\nFɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ᴘʀᴏᴄᴇss ᴡɪʟʟ sᴛᴀʀᴛ ɪɴ 5 sᴇᴄᴏɴᴅs!</b>")
-        await asyncio.sleep(5)
-        deleted = 0
-        async with lock:
             try:
-                for file in files:
-                    file_ids = file.file_id
-                    file_name = file.file_name
-                    result = await Media.collection.delete_one({
-                        '_id': file_ids,
-                    })
-                    if result.deleted_count:
-                        logger.info(f'Fɪʟᴇ Fᴏᴜɴᴅ ғᴏʀ ʏᴏᴜʀ ᴏ̨ᴜᴇʀʏ {keyword}! Sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {file_name} ғʀᴏᴍ ᴅᴀᴛᴀʙᴀsᴇ.')
-                        deleted += 1
-                        if deleted % 20 == 0:
-                            await query.message.edit_text(f"<b>Pʟᴏᴄᴇss sᴛᴀʀᴛᴇᴅ ғᴏʀ ᴅᴇʟᴇᴛɪɴɢ ғɪʟᴇs ғʀᴏᴍ DB. Sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ғɪʟᴇs ғʀᴏᴍ DB ғᴏʀ ʏᴏᴜʀ ᴏ̨ᴜᴇʀʏ {keyword} !\n\nPʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>")
-            except Exception as e:
-                logger.exception(e)
-                await query.message.edit_text(f'Eʀʀᴏʀ: {e}')
-            else:
-                await query.message.edit_text(f"<b>Pʀᴏᴄᴇss Cᴏᴍᴘʟᴇᴛᴇᴅ ғᴏʀ ғɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ !\n\nSᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴓ {str(deleted)} ғɪʟᴇs ғʀᴏᴍ DB ғᴏʀ ʏᴏᴜʀ ᴏ̨ᴜᴇʀʏ {keyword}.</b>")
-
-    elif query.data == "earn":
-        buttons = [[
-            InlineKeyboardButton('♻️ ᴄᴜꜱᴛᴏᴍɪᴢᴇ ʏᴏᴜʀ ɢʀᴏᴜᴘ ♻️', callback_data='custom')    
-        ], [ 
-            InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='start'),
-            InlineKeyboardButton('sᴜᴘᴘᴏʀᴛ', url=USERNAME)
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await query.message.edit_text(
-             text=script.EARN_TEXT.format(temp.B_LINK),
-             reply_markup=reply_markup,
-             disable_web_page_preview=True,
-             parse_mode=enums.ParseMode.HTML
-         )
-    elif query.data == "uploader":
-        buttons = [[
-            InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='features')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)  
-        await query.message.edit_text(
-            text=script.IMGUPL,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-    elif query.data == "font":
-        buttons = [[
-            InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='features')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons) 
-        await query.message.edit_text(
-            text=script.FONT_TXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-    elif query.data == "custom":
-        buttons = [[
-            InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='earn')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons) 
-        await query.message.edit_text(
-            text=script.CUSTOM_TEXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-    elif query.data == "buy_premium":
-        btn = [[
-            InlineKeyboardButton('📸 sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ 📸', url=USERNAME)
-        ],[
-            InlineKeyboardButton('🗑 ᴄʟᴏsᴇ 🗑', callback_data='close_data')
-        ]]
-        reply_markup = InlineKeyboardMarkup(btn)
-        await query.message.reply_photo(
-            photo=(QR_CODE),
-            caption=script.PREMIUM_TEXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-
-    elif query.data.startswith("setgs"):
-        ident, set_type, status, grp_id = query.data.split("#")
-        userid = query.from_user.id if query.from_user else None
-        if not await is_check_admin(client, int(grp_id), userid):
-            await query.answer(script.ALRT_TXT, show_alert=True)
+                await d.delete()
+            except Exception:
+                pass
             return
-        if status == "True":
-            await save_group_settings(int(grp_id), set_type, False)
-        else:
-            await save_group_settings(int(grp_id), set_type, True)
-        settings = await get_settings(int(grp_id))      
-        if settings is not None:
-            buttons = [[
-                InlineKeyboardButton('ᴀᴜᴛᴏ ꜰɪʟᴛᴇʀ', callback_data=f'setgs#auto_filter#{settings["auto_filter"]}#{grp_id}'),
-                InlineKeyboardButton('ᴏɴ ✔️' if settings["auto_filter"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#auto_filter#{settings["auto_filter"]}#{grp_id}')
-            ],[
-                InlineKeyboardButton('ꜰɪʟᴇ sᴇᴄᴜʀᴇ', callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}'),
-                InlineKeyboardButton('ᴏɴ ✔️' if settings["file_secure"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}')
-            ],[
-                InlineKeyboardButton('ɪᴍᴅʙ', callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}'),
-                InlineKeyboardButton('ᴏɴ ✔️' if settings["imdb"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}')
-            ],[
-                InlineKeyboardButton('sᴘᴇʟʟ ᴄʜᴇᴄᴋ', callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}'),
-                InlineKeyboardButton('ᴏɴ ✔️' if settings["spell_check"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}')
-            ],[
-                InlineKeyboardButton('ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ', callback_data=f'setgs#auto_delete#{settings["auto_delete"]}#{grp_id}'),
-                InlineKeyboardButton(f'{get_readable_time(DELETE_TIME)}' if settings["auto_delete"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#auto_delete#{settings["auto_delete"]}#{grp_id}')
-            ],[
-                InlineKeyboardButton('ʀᴇsᴜʟᴛ ᴍᴏᴅᴇ', callback_data=f'setgs#link#{settings["link"]}#{str(grp_id)}'),
-                InlineKeyboardButton('ʟɪɴᴋ' if settings["link"] else 'ʙᴜᴛᴛᴏɴ', callback_data=f'setgs#link#{settings["link"]}#{str(grp_id)}')
-            ],[
-                InlineKeyboardButton('ꜰɪʟᴇꜱ ᴍᴏᴅᴇ', callback_data=f'setgs#is_verify#{settings.get("is_verify", IS_VERIFY)}#{grp_id}'),
-                InlineKeyboardButton('ᴠᴇʀɪꜰʏ' if settings.get("is_verify", IS_VERIFY) else 'ꜱʜᴏʀᴛʟɪɴᴋ', callback_data=f'setgs#is_verify#{settings.get("is_verify", IS_VERIFY)}#{grp_id}')
-            ],[
-                InlineKeyboardButton('☕️ ᴄʟᴏsᴇ ☕️', callback_data='close_data')
-            ]]
-            reply_markup = InlineKeyboardMarkup(buttons)
-            d = await query.message.edit_reply_markup(reply_markup)
-            await asyncio.sleep(300)
-            await d.delete()
-        else:
-            await query.message.edit_text("<b>ꜱᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ</b>")
 
-    elif query.data.startswith("send_all"):
-        ident, key = query.data.split("#")
-        user = query.message.reply_to_message.from_user.id
-        if int(user) != 0 and query.from_user.id != int(user):
-            return await query.answer(f"Hello {query.from_user.first_name},\nDon't Click Other Results!", show_alert=True)
+        # get file_id
+        parts = data.split("#", 1)
+        if len(parts) != 2:
+            return await query.answer("⚠️ Invalid callback data", show_alert=True)
+        file_id = parts[1]
+
+        try:
+            # copy/send to BIN_CHANNEL and get message id
+            sent = await client.send_cached_media(chat_id=BIN_CHANNEL, file_id=file_id)
+        except Exception as e:
+            logger.exception("failed to send to BIN_CHANNEL: %s", e)
+            return await query.answer("Failed to prepare streaming. Try later.", show_alert=True)
+
+        # build links
+        try:
+            nid = sent.id
+            h = get_hash(sent)
+            online = f"https://{URL}/watch/{nid}?hash={h}"
+            download = f"https://{URL}/{nid}?hash={h}"
+        except Exception as e:
+            logger.exception("failed to build links: %s", e)
+            return await query.answer("Internal error building links.", show_alert=True)
+
+        btn = [
+            [
+                InlineKeyboardButton("ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ", url=online),
+                InlineKeyboardButton("ꜰᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=download),
+            ],
+            [
+                InlineKeyboardButton('🧿 Wᴀᴛᴄʜ ᴏɴ ᴛᴇʟᴇɢʀᴀᴍ 🖥', web_app=WebAppInfo(url=online))
+            ]
+        ]
+        try:
+            await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(btn))
+        except Exception:
+            # If reply markup edit fails, try sending a new message
+            try:
+                await query.message.reply_text("Links ready:\n" + online)
+            except Exception:
+                pass
+        return
+
+    # ----------------------
+    # simple static callback responses
+    # ----------------------
+    if data == "buttons":
+        return await query.answer("ɴᴏ ᴍᴏʀᴇ ᴘᴀɢᴇs 😊", show_alert=True)
+
+    if data == "pages":
+        return await query.answer("ᴛʜɪs ɪs ᴘᴀɢᴇs ʙᴜᴛᴛᴏɴ 😅", show_alert=True)
+
+    if data.startswith("lang_art"):
+        parts = data.split("#", 1)
+        lang = parts[1] if len(parts) == 2 else ""
+        return await query.answer(f"ʏᴏᴜ sᴇʟᴇᴄᴛᴇᴅ {lang.title()} ʟᴀɴɢᴜᴀɢᴇ ⚡️", show_alert=True)
+
+    # ----------------------
+    # start (main menu)
+    # ----------------------
+    if data == "start":
+        buttons = [
+            [InlineKeyboardButton('• Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ •', url='https://t.me/sandalwood_kannada_moviesz')],
+            [
+                InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url='https://t.me/+x6OfRDdUPrUwZTZl'),
+                InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url='https://t.me/+fDkIGNmk5BU5ODVl')
+            ]
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+        try:
+            await query.message.edit_text(
+                text=script.START_TXT.format(query.from_user.mention, get_status(), query.from_user.id),
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
+        except Exception:
+            pass
+        return
+
+    # ----------------------
+    # features -> submenus
+    # ----------------------
+    if data == "features":
+        buttons = [
+            [InlineKeyboardButton('📸 ɪᴍᴀɢᴇ', callback_data='uploader'),
+             InlineKeyboardButton('🆎️ ꜰᴏɴᴛ', callback_data='font')],
+            [InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='start')]
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+        try:
+            await query.message.edit_text(text=script.HELP_TXT, reply_markup=reply_markup, parse_mode=enums.ParseMode.HTML)
+        except Exception:
+            pass
+        return
+
+    # other informative pages
+    if data == "earn":
+        buttons = [
+            [InlineKeyboardButton('♻️ ᴄᴜꜱᴛᴏᴍɪᴢᴇ ʏᴏᴜʀ ɢʀᴏᴜᴘ ♻️', callback_data='custom')],
+            [InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='start'), InlineKeyboardButton('sᴜᴘᴘᴏʀᴛ', url=USERNAME)]
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+        try:
+            await query.message.edit_text(text=script.EARN_TEXT.format(temp.B_LINK), reply_markup=reply_markup, disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
+        except Exception:
+            pass
+        return
+
+    if data == "uploader":
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='features')]])
+        try:
+            await query.message.edit_text(text=script.IMGUPL, reply_markup=reply_markup, parse_mode=enums.ParseMode.HTML)
+        except Exception:
+            pass
+        return
+
+    if data == "font":
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='features')]])
+        try:
+            await query.message.edit_text(text=script.FONT_TXT, reply_markup=reply_markup, parse_mode=enums.ParseMode.HTML)
+        except Exception:
+            pass
+        return
+
+    if data == "custom":
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('⋞ ʙᴀᴄᴋ', callback_data='earn')]])
+        try:
+            await query.message.edit_text(text=script.CUSTOM_TEXT, reply_markup=reply_markup, parse_mode=enums.ParseMode.HTML)
+        except Exception:
+            pass
+        return
+
+    # ----------------------
+    # buy_premium -> show QR + caption
+    # ----------------------
+    if data == "buy_premium":
+        btn = [
+            [InlineKeyboardButton('📸 sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ 📸', url=USERNAME)],
+            [InlineKeyboardButton('🗑 ᴄʟᴏsᴇ 🗑', callback_data='close_data')]
+        ]
+        try:
+            await query.message.reply_photo(photo=QR_CODE, caption=script.PREMIUM_TEXT, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.HTML)
+        except Exception:
+            pass
+        return
+
+    # ----------------------
+    # setgs#<type>#<status>#<grp_id> -> toggle group settings (admin-only)
+    # ----------------------
+    if data.startswith("setgs"):
+        parts = data.split("#")
+        if len(parts) != 4:
+            return await query.answer("⚠️ Invalid data", show_alert=True)
+
+        _, set_type, status, grp_id = parts
+        try:
+            grp_id_int = int(grp_id)
+        except Exception:
+            return await query.answer("⚠️ Invalid group id", show_alert=True)
+
+        userid = user_id
+        if not await is_check_admin(client, grp_id_int, userid):
+            return await query.answer(script.ALRT_TXT, show_alert=True)
+
+        # toggle
+        new_status = False if status == "True" else True
+        await save_group_settings(grp_id_int, set_type, new_status)
+
+        settings = await get_settings(grp_id_int)
+        if settings is None:
+            try:
+                await query.message.edit_text("<b>ꜱᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ</b>")
+            except Exception:
+                pass
+            return
+
+        # Build buttons reflecting settings
+        buttons = [
+            [InlineKeyboardButton('ᴀᴜᴛᴏ ꜰɪʟᴛᴇʀ', callback_data=f'setgs#auto_filter#{settings["auto_filter"]}#{grp_id}'),
+             InlineKeyboardButton('ᴏɴ ✔️' if settings["auto_filter"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#auto_filter#{settings["auto_filter"]}#{grp_id}')],
+            [InlineKeyboardButton('ꜰɪʟᴇ sᴇᴄᴜʀᴇ', callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}'),
+             InlineKeyboardButton('ᴏɴ ✔️' if settings["file_secure"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}')],
+            [InlineKeyboardButton('ɪᴍᴅʙ', callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}'),
+             InlineKeyboardButton('ᴏɴ ✔️' if settings["imdb"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}')],
+            [InlineKeyboardButton('sᴘᴇʟʟ ᴄʜᴇᴄᴋ', callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}'),
+             InlineKeyboardButton('ᴏɴ ✔️' if settings["spell_check"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}')],
+            [InlineKeyboardButton('ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ', callback_data=f'setgs#auto_delete#{settings["auto_delete"]}#{grp_id}'),
+             InlineKeyboardButton(f'{get_readable_time(DELETE_TIME)}' if settings["auto_delete"] else 'ᴏꜰꜰ ✗', callback_data=f'setgs#auto_delete#{settings["auto_delete"]}#{grp_id}')],
+            [InlineKeyboardButton('ʀᴇsᴜʟᴛ ᴍᴏᴅᴇ', callback_data=f'setgs#link#{settings["link"]}#{grp_id}'),
+             InlineKeyboardButton('ʟɪɴᴋ' if settings["link"] else 'ʙᴜᴛᴛᴏɴ', callback_data=f'setgs#link#{settings["link"]}#{grp_id}')],
+            [InlineKeyboardButton('ꜰɪʟᴇꜱ ᴍᴏᴅᴇ', callback_data=f'setgs#is_verify#{settings.get("is_verify", IS_VERIFY)}#{grp_id}'),
+             InlineKeyboardButton('ᴠᴇʀɪꜰʏ' if settings.get("is_verify", IS_VERIFY) else 'ꜱʜᴏʀᴛʟɪɴᴋ', callback_data=f'setgs#is_verify#{settings.get("is_verify", IS_VERIFY)}#{grp_id}')],
+            [InlineKeyboardButton('☕️ ᴄʟᴏsᴇ ☕️', callback_data='close_data')]
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+        try:
+            d = await query.message.edit_reply_markup(reply_markup)
+            # try to delete after 5 minutes (non-blocking)
+            await asyncio.sleep(300)
+            try:
+                if d:
+                    await d.delete()
+            except Exception:
+                pass
+        except Exception:
+            pass
+        return
+
+    # ----------------------
+    # send_all#<key> -> send link or files
+    # ----------------------
+    if data.startswith("send_all"):
+        parts = data.split("#", 1)
+        if len(parts) != 2:
+            return await query.answer("⚠️ Invalid data", show_alert=True)
+        _, key = parts
+
+        # ensure the clicker is the owner of the result
+        owner = _replied_user_id(query.message) or user_id or 0
+        try:
+            if int(owner) != 0 and user_id != int(owner):
+                return await query.answer(f"Hello {query.from_user.first_name},\nDon't Click Other Results!", show_alert=True)
+        except Exception:
+            return await query.answer(script.ALRT_TXT, show_alert=True)
+
         files = temp.FILES_ID.get(key)
         if not files:
-            await query.answer(script.OLD_ALRT_TXT.format(query.from_user.first_name),show_alert=True)
-            return        
-        await query.answer(url=f"https://t.me/{temp.U_NAME}?start=allfiles_{query.message.chat.id}_{key}")
+            return await query.answer(script.OLD_ALRT_TXT.format(query.from_user.first_name), show_alert=True)
 
-                   ☆☆☆☆☆☆☆♡◇♡■■
+        # Provide a shortlink to view all files (non-intrusive)
+        try:
+            url = f"https://t.me/{temp.U_NAME}?start=allfiles_{query.message.chat.id}_{key}"
+            await query.answer(url=url)
+        except Exception:
+            try:
+                # fallback: edit message with link
+                await query.message.edit_text(f"Open: {url}")
+            except Exception:
+                pass
+        return
+
+    # ----------------------
+    # techifybots#<keyword> -> find & delete bad files (admin-only)
+    # ----------------------
+    if data.startswith("techifybots"):
+        parts = data.split("#", 1)
+        if len(parts) != 2:
+            return await query.answer("⚠️ Invalid data", show_alert=True)
+        _, keyword = parts
+
+        try:
+            await query.message.edit_text(f"<b>Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs ғᴏʀ ʏᴏᴜʀ ᴏ̨ᴜᴇʀʏ {keyword} ᴏɴ DB... Pʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>", parse_mode=enums.ParseMode.HTML)
+            files, total = await get_bad_files(keyword)
+            await query.message.edit_text(f"<b>Fᴏᴜɴᴅ {total} Fɪʟᴇs ғᴏʀ ʏᴏᴜʢ ᴏ̨ᴜᴇʀʏ {keyword} !\n\nFɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ᴘʀᴏᴄᴇss ᴡɪʟʟ sᴛᴀʀᴛ ɪɴ 5 sᴇᴄᴏɴᴅs!</b>", parse_mode=enums.ParseMode.HTML)
+            await asyncio.sleep(5)
+
+            deleted = 0
+            async with lock:
+                for file in files:
+                    file_ids = file.file_id
+                    file_name = getattr(file, "file_name", str(file_ids))
+                    try:
+                        result = await Media.collection.delete_one({'_id': file_ids})
+                        if result.deleted_count:
+                            logger.info("Deleted %s from DB", file_name)
+                            deleted += 1
+                            # update progress periodically
+                            if deleted % 20 == 0:
+                                try:
+                                    await query.message.edit_text(f"<b>Progress: deleted {deleted} files ...</b>", parse_mode=enums.ParseMode.HTML)
+                                except Exception:
+                                    pass
+                    except Exception as e:
+                        logger.exception("error deleting file: %s", e)
+                        # continue on errors
+                        continue
+
+            await query.message.edit_text(f"<b>Process Completed. Successfully deleted {deleted} files for query {keyword}.</b>", parse_mode=enums.ParseMode.HTML)
+        except Exception as e:
+            logger.exception("techifybots error: %s", e)
+            try:
+                await query.message.edit_text(f"Eʀʀᴏʀ: {e}")
+            except Exception:
+                pass
+        return
+
+    # ----------------------
+    # fallback: unknown callback
+    # ----------------------
+    await query.answer("Unknown action.", show_alert=False)
+    return
+
+     ☆☆☆☆☆☆☆♡◇♡■■
 
 async def auto_filter(client, msg, spoll=False):
     if not spoll:
