@@ -77,6 +77,8 @@ COLLECTION_NAME = environ.get('COLLECTION_NAME', 'KR_PICTURE')
 
 # Links
 SUPPORT_LINK = environ.get('SUPPORT_LINK', 'https://t.me/interworld_groups')
+GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+x6OfRDdUPrUwZTZl')
+CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/+fDkIGNmk5BU5ODVl')
 UPDATES_LINK = environ.get('UPDATES_LINK', 'https://t.me/KR_PICTURE')
 FILMS_LINK = environ.get('FILMS_LINK', 'https://t.me/KR_PICTURE')
 TUTORIAL = environ.get("TUTORIAL", "https://t.me/how_to_opan_linkz/6")
