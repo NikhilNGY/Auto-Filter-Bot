@@ -66,8 +66,8 @@ async def start(client, message):
             InlineKeyboardButton('• Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ •', url='https://t.me/interworld_Backups')
         ],
         [
-            InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=GRP_LNK),
-            InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=CHNL_LNK)
+            InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=SUPPORT_LINK),
+            InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=UPDATES_LINK)
         ],
         [
             InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='help')
