@@ -15,10 +15,10 @@ instance = Instance.from_db(db)
 
 @instance.register
 class Media(Document):
-    file_id = fields.StrField(attribute='_id', missing=None)
-    file_name = fields.StrField(required=True, missing=None)
-    file_size = fields.IntField(required=True, missing=0)
-    caption = fields.StrField(missing=None, allow_none=True)
+    file_id = fields.StrField(attribute='_id')
+    file_name = fields.StrField(required=True)
+    file_size = fields.IntField(required=True)
+    caption = fields.StrField(allow_none=True)
 
     class Meta:
         indexes = ('$file_name', )
