@@ -63,15 +63,14 @@ async def start(client, message):
     
     if (len(message.command) != 2) or (len(message.command) == 2 and message.command[1] == 'start'):
         buttons = [[
-            InlineKeyboardButton('⤬ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
-                ],[
-                    InlineKeyboardButton('🌿 ꜱᴜᴘᴘᴏʀᴛ', callback_data="my_about"),
-                    InlineKeyboardButton('👤 ᴏᴡɴᴇʀ', callback_data='my_owner')
-                ],[
-                    InlineKeyboardButton('🍁 ғᴇᴀᴛᴜʀᴇs', callback_data='help'),
-                    InlineKeyboardButton('🔐 ᴘʀᴇᴍɪᴜᴍ', callback_data='buy_premium')
-                ],[
-                    InlineKeyboardButton('💰 ᴇᴀʀɴ ᴍᴏɴᴇʏ ʙʏ ʙᴏᴛ 💰', callback_data='earn')
+            InlineKeyboardButton('• Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ •', url='https://t.me/interworld_Backups')
+        ],
+        [
+            InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=GRP_LNK),
+            InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=CHNL_LNK)
+        ],
+        [
+            InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='help')
                   ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_photo(
@@ -356,7 +355,7 @@ async def save_shortlink(client, message):
     try:
         _, url, api = message.text.split(" ", 2)
     except:
-        return await message.reply_text("<b>Command Incomplete:-\n\ngive me a shortlink & api along with the command...\n\nEx:- <code>/shortlink mdisklink.link 5843c3cc645f5077b2200a2c77e0344879880b3e</code>")   
+        return await message.reply_text("<b>Command Incomplete:-\n\ngive me a shortlink & api along with the command...\n\nEx:- <code>/shortlink vplink.in 5843c3cc645f5077b2200a2c77e034880b3e</code>")   
     try:
         await get_shortlink(url, api, f'https://t.me/{temp.U_NAME}')
     except:
@@ -549,7 +548,7 @@ async def remove_premium_cmd_handler(client, message):
             await message.reply_text("Premium access removed to the user.")
             await client.send_message(
                 chat_id=user_id,
-                text=f"<b>premium removed by admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : @Rk_botowner \n</b>",                
+                text=f"<b>premium removed by admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : @Nikhil5757h \n</b>",                
             )
         else:
             await message.reply_text("Invalid time format.'")
