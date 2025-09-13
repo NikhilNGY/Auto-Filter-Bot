@@ -2,8 +2,8 @@ pyrofork==2.3.45
 tgcrypto
 pymongo[srv]>=3.12
 motor>=3.6
-marshmallow
-umongo
+marshmallow<4
+umongo==3.1.0
 pytz
 git+https://github.com/Joelkb/cinemagoer
 shortzy
@@ -14,3 +14,5 @@ fuzzywuzzy
 python-Levenshtein
 dnspython
 uvloop
+pyrogram 
+requests 
