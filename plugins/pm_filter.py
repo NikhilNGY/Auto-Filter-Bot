@@ -497,7 +497,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         reply_markup = InlineKeyboardMarkup(btn)
         await query.message.reply_photo(
             photo="https://graph.org/file/ea8423d123dd90e34e10c.jpg",
-            caption="**⚡️Buy Premium Now\n\n ╭━━━━━━━━╮\n    Premium Plans\n  • ₹10 - 1 day (Trial)\n  • ₹25 - 1 Week (Trial)\n  • ₹50 - 1 Month\n  • ₹120 - 3 Months\n  • ₹220 - 6 Months\n  • ₹400 - 1 Year\n╰━━━━━━━━╯\n\nPremium Features ♤ᵀ&ᶜ\n\n☆ New/Old Movies and Series\n☆ High Quality available\n☆ Get Files Directly \n☆ High speed Download links\n☆ Full Admin support \n☆ Request will be completed in 1 hour if available.\n\n**",
+            caption="**⚡️Buy Premium Now\n\n ╭━━━━━━━━╮\n    Premium Plans\n  • ₹30 - 1 day (Trial)\n  • ₹95 - 1 Week (Trial)\n  • ₹180 - 1 Month\n  • ₹299 - 3 Months\n  • 499 - 6 Months\n  • ₹1599 - 1 Permanent\n╰━━━━━━━━╯\n\nPremium Features ♤ᵀ&ᶜ\n\n☆ New/Old Movies and Series\n☆ High Quality available\n☆ Get Files Directly \n☆ High speed Download links\n☆ Full Admin support \n☆ Request will be completed in 1 hour if available.\n\n**",
             reply_markup=reply_markup
         )
         return 
@@ -536,15 +536,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "start":
         await query.answer('Welcome!')
         buttons = [[
-            InlineKeyboardButton('⤬ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=start')
-        ],[
-            InlineKeyboardButton('🌿 ꜱᴜᴘᴘᴏʀᴛ', callback_data="my_about"),
-            InlineKeyboardButton('👤 ᴏᴡɴᴇʀ', callback_data='my_owner')
-        ],[
-            InlineKeyboardButton('🍁 ғᴇᴀᴛᴜʀᴇs', callback_data='help'),
-            InlineKeyboardButton('🔐 ᴘʀᴇᴍɪᴜᴍ', callback_data='buy_premium')
-        ],[
-            InlineKeyboardButton('💰 ᴇᴀʀɴ ᴍᴏɴᴇʏ ʙʏ ʙᴏᴛ 💰', callback_data='earn')
+            InlineKeyboardButton('• Bᴀᴄᴋᴜᴘ Cʜᴀɴɴᴇʟ •', url='https://t.me/sandalwood_kannada_moviesz')
+        ],
+        [
+            InlineKeyboardButton('• Mᴏᴠɪᴇ Gʀᴏᴜᴘ •', url=GRP_LNK),
+            InlineKeyboardButton('• Mᴀɪɴ Cʜᴀɴɴᴇʟ •', url=CHNL_LNK)
+        ],
+        [
+            InlineKeyboardButton('• Hᴇʟᴘ •', callback_data='help')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
@@ -624,12 +623,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
         
     elif query.data == "help":
         buttons = [[
-            InlineKeyboardButton('Group Commands', callback_data='infinity_group_commands')
-        ],[
-            InlineKeyboardButton('User Command', callback_data='user_command'),
-            InlineKeyboardButton('Admin Command', callback_data='admin_command')
-        ],[
-            InlineKeyboardButton('« ʙᴀᴄᴋ', callback_data='start')
+            InlineKeyboardButton('• Aɴʏ Iꜱꜱᴜᴇ Cᴏɴᴛᴀᴄᴛ •', url=f'https://t.me/Nikhil5757h')
+        ], [
+            InlineKeyboardButton('• Sᴛᴀᴛᴜs •', callback_data='stats'),
+            InlineKeyboardButton('• Owner •', url=f'https://t.me/Nikhil5757h')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
