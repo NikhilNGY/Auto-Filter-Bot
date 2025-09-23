@@ -1066,7 +1066,7 @@ async def advantage_spell_chok(message, s):
         movies = await get_poster(search, bulk=True)
     except:
         n = await s.edit_text(text=script.NOT_FILE_TXT.format(message.from_user.mention, search), reply_markup=InlineKeyboardMarkup(btn))
-        await asyncio.sleep(60)
+        await asyncio.sleep(6000)
         await n.delete()
         try:
             await message.delete()
@@ -1075,7 +1075,7 @@ async def advantage_spell_chok(message, s):
         return
     if not movies:
         n = await s.edit_text(text=script.NOT_FILE_TXT.format(message.from_user.mention, search), reply_markup=InlineKeyboardMarkup(btn))
-        await asyncio.sleep(60)
+        await asyncio.sleep(6000)
         await n.delete()
         try:
             await message.delete()
@@ -1092,7 +1092,7 @@ async def advantage_spell_chok(message, s):
         [InlineKeyboardButton("🚫 ᴄʟᴏsᴇ 🚫", callback_data="close_data")]
     )
     s = await s.edit_text(text=f"👋 Hello {message.from_user.mention},\n\nI couldn't find the <b>'{search}'</b> you requested.\nSelect if you meant one of these? 👇", reply_markup=InlineKeyboardMarkup(buttons))
-    await asyncio.sleep(300)
+    await asyncio.sleep(6000)
     await s.delete()
     try:
         await message.delete()
