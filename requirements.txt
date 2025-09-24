@@ -7,6 +7,7 @@ pymongo
 pytz
 cinemagoer
 shortzy
+uvloop
 aiohttp
 aiofiles
 telegraph
