@@ -146,29 +146,28 @@ async def next_page(bot, query):
     if settings['links']:
         btn = []
         for file_num, file in enumerate(files, start=offset+1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-    else:
-        btn = [[
-            InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
+           files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+else:
+    btn = [
+        [
+            InlineKeyboardButton(
+                text=f"📂 {get_size(file.file_size)} {file.file_name}",
+                callback_data=f'file#{file.file_id}'
+            )
         ]
-            for file in files
-        ]
-    if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
-        btn.insert(0,
-            [InlineKeyboardButton("📰 ʟᴀɴɢᴜᴀɢᴇs", callback_data=f"languages#{key}#{req}#{offset}"),
-            InlineKeyboardButton("🔍 ǫᴜᴀʟɪᴛʏ", callback_data=f"quality#{key}#{req}#{offset}")]
-        )
-        btn.insert(1,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-    else:
-        btn.insert(0,
-            [InlineKeyboardButton("📰 ʟᴀɴɢᴜᴀɢᴇs", callback_data=f"languages#{key}#{req}#{offset}"),
-            InlineKeyboardButton("🔍 ǫᴜᴀʟɪᴛʏ", callback_data=f"quality#{key}#{req}#{offset}")]
-        )
-        btn.insert(1,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
+        for file in files
+    ]
+
+if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
+else:
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
 
     if 0 < offset <= MAX_BTN:
         off_set = 0
@@ -243,30 +242,31 @@ async def filter_languages_cb_handler(client: Client, query: CallbackQuery):
     del_msg = f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>" if settings["auto_delete"] else ''
     files_link = ''
 
-    if settings['links']:
-        btn = []
-        for file_num, file in enumerate(files, start=1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-    else:
-        btn = [[
-            InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
+if settings['links']:
+    btn = []
+    for file_num, file in enumerate(files, start=1):
+        files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+else:
+    btn = [
+        [
+            InlineKeyboardButton(
+                text=f"📂 {get_size(file.file_size)} {file.file_name}",
+                callback_data=f'file#{file.file_id}'
+            )
         ]
-            for file in files
-        ]
-    if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
-        btn.insert(0,[
-            InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-        btn.insert(1,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-    else:
-        btn.insert(0,[
-            InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-        btn.insert(1,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
+        for file in files
+    ]
+
+if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
+else:
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
     
     if l_offset != "":
         btn.append(
@@ -301,30 +301,32 @@ async def lang_next_page(bot, query):
     except:
         n_offset = 0
     files_link = ''
-    if settings['links']:
-        btn = []
-        for file_num, file in enumerate(files, start=l_offset+1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-    else:
-        btn = [[
-            InlineKeyboardButton(text=f"✨ {get_size(file.file_size)} ⚡️ {file.file_name}", callback_data=f'file#{file.file_id}')
+
+if settings['links']:
+    btn = []
+    for file_num, file in enumerate(files, start=l_offset + 1):
+        files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+else:
+    btn = [
+        [
+            InlineKeyboardButton(
+                text=f"✨ {get_size(file.file_size)} ⚡️ {file.file_name}",
+                callback_data=f'file#{file.file_id}'
+            )
         ]
-            for file in files
-        ]
-    if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
-        btn.insert(0,[
-            InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-        btn.insert(1,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-    else:
-        btn.insert(0,[
-            InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
-        btn.insert(1,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )    
+        for file in files
+    ]
+
+if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
+else:
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
     if 0 < l_offset <= MAX_BTN:
         b_offset = 0
     elif l_offset == 0:
@@ -368,24 +370,32 @@ async def quality_search(client: Client, query: CallbackQuery):
     settings = await get_settings(query.message.chat.id)
     del_msg = f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>" if settings["auto_delete"] else ''
     files_link = ''
-    if settings['links']:
-        btn = []
-        for file_num, file in enumerate(files, start=1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-    else:
-        btn = [[
-            InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
-        ]
-            for file in files
-        ]
-    if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
-        btn.insert(0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            ) 
-    else:
-        btn.insert(0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
+
+if settings['links']:
+    btn = []
+    for file_num, file in enumerate(files, start=1):
+        files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+else:
+    btn = [
+        [
+            InlineKeyboardButton(
+                text=f"📂 {get_size(file.file_size)} {file.file_name}",
+                callback_data=f'file#{file.file_id}'
             )
+        ]
+        for file in files
+    ]
+
+if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
+else:
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
     if l_offset != "":
         btn.append(
             [InlineKeyboardButton(text=f"1/{math.ceil(int(total_results) / MAX_BTN)}", callback_data="buttons"),
@@ -423,20 +433,27 @@ async def quality_next_page(bot, query):
         btn = []
         for file_num, file in enumerate(files, start=l_offset+1):
             files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-    else:
-        btn = [[
-            InlineKeyboardButton(text=f"✨ {get_size(file.file_size)} ⚡️ {file.file_name}", callback_data=f'file#{file.file_id}')
-        ]
-            for file in files
-        ]
-    if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
-        btn.insert(0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
+else:
+    btn = [
+        [
+            InlineKeyboardButton(
+                text=f"✨ {get_size(file.file_size)} ⚡️ {file.file_name}",
+                callback_data=f'file#{file.file_id}'
             )
-    else:
-        btn.insert(0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )
+        ]
+        for file in files
+    ]
+
+if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
+else:
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
     if 0 < l_offset <= MAX_BTN:
         b_offset = 0
     elif l_offset == 0:
@@ -541,7 +558,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         free_trial_status = await db.get_free_trial_status(user_id)
         if not free_trial_status:            
             await db.give_free_trail(user_id)
-            new_text = "**ʏᴏᴜ ᴄᴀɴ ᴜsᴇ ꜰʀᴇᴇ ᴛʀᴀɪʟ ꜰᴏʀ 5 ᴍɪɴᴜᴛᴇs ꜰʀᴏᴍ ɴᴏᴡ 😀\n\nआप अब से 5 मिनट के लिए निःशुल्क ट्रायल का उपयोग कर सकते हैं 😀**"        
+            new_text = "**ʏᴏᴜ ᴄᴀɴ ᴜsᴇ ꜰʀᴇᴇ ᴛʀᴀɪʟ ꜰᴏʀ 5 ᴍɪɴᴜᴛᴇs ꜰʀᴏᴍ ɴᴏᴡ 😀**"        
             await query.message.edit_text(text=new_text)
             return
         else:
@@ -921,42 +938,49 @@ async def auto_filter(client, msg, s, spoll=False):
         btn = []
         for file_num, file in enumerate(files, start=1):
             files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-    else:
-        btn = [[
-            InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
-        ]
-            for file in files
-        ]   
-    if offset != "":
-        if settings['shortlink'] and not await db.has_premium_access(message.from_user.id):
-            btn.insert(0,
-                [InlineKeyboardButton("📰 ʟᴀɴɢᴜᴀɢᴇs", callback_data=f"languages#{key}#{req}#{offset}"),
-                InlineKeyboardButton("🔍 ǫᴜᴀʟɪᴛʏ", callback_data=f"quality#{key}#{req}#{offset}")]
-            )
-            btn.insert(1,
-                [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )
-        else:
-            btn.insert(0,
-                [InlineKeyboardButton("📰 ʟᴀɴɢᴜᴀɢᴇs", callback_data=f"languages#{key}#{req}#{offset}"),
-                InlineKeyboardButton("🔍 ǫᴜᴀʟɪᴛʏ", callback_data=f"quality#{key}#{req}#{offset}")]
-            )
-            btn.insert(1,
-                [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )
-        btn.append(
-            [InlineKeyboardButton(text=f"1/{math.ceil(int(total_results) / MAX_BTN)}", callback_data="buttons"),
-             InlineKeyboardButton(text="ɴᴇxᴛ »", callback_data=f"next_{req}_{key}_{offset}")]
+else:
+    btn = [[
+        InlineKeyboardButton(
+            text=f"📂 {get_size(file.file_size)} {file.file_name}",
+            callback_data=f'file#{file.file_id}'
+        )
+    ] for file in files]
+
+if offset != "":
+    if settings['shortlink'] and not await db.has_premium_access(message.from_user.id):
+        btn.insert(
+            0,
+            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
         )
     else:
-        if settings['shortlink'] and not await db.has_premium_access(message.from_user.id):
-            btn.insert(0,
-                [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
+        btn.insert(
+            0,
+            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+        )
+
+    btn.append(
+        [
+            InlineKeyboardButton(
+                text=f"1/{math.ceil(int(total_results) / MAX_BTN)}",
+                callback_data="buttons"
+            ),
+            InlineKeyboardButton(
+                text="ɴᴇxᴛ »",
+                callback_data=f"next_{req}_{key}_{offset}"
             )
-        else:
-            btn.insert(0,
-                [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url=f"https://t.me/KR_PICTURE")
-            )
+        ]
+    )
+else:
+    if settings['shortlink'] and not await db.has_premium_access(message.from_user.id):
+        btn.insert(
+            0,
+            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+        )
+    else:
+        btn.insert(
+            0,
+            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+        )
     imdb = await get_poster(search, file=(files[0]).file_name) if settings["imdb"] else None
     TEMPLATE = settings['template']
     if imdb:
