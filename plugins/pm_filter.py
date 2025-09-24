@@ -998,62 +998,57 @@ async def auto_filter(client, msg, s, spoll=False):
             return
     else:
         settings = await get_settings(msg.message.chat.id)
-        message = msg.message.reply_to_message  # msg will be callback query
+        message = msg.message.reply_to_message  # msg is a callback query
         search, files, offset, total_results = spoll
+
     req = message.from_user.id if message and message.from_user else 0
     key = f"{message.chat.id}-{message.id}"
     temp.FILES[key] = files
     BUTTONS[key] = search
+
     files_link = ""
     if settings['links']:
         btn = []
         for file_num, file in enumerate(files, start=1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-else:
-    btn = [[
-        InlineKeyboardButton(
-            text=f"📂 {get_size(file.file_size)} {file.file_name}",
-            callback_data=f'file#{file.file_id}'
-        )
-    ] for file in files]
-
-if offset != "":
-    if settings['shortlink'] and not await db.has_premium_access(message.from_user.id):
-        btn.insert(
-            0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
-        )
-    else:
-        btn.insert(
-            0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
-        )
-
-    btn.append(
-        [
-            InlineKeyboardButton(
-                text=f"1/{math.ceil(int(total_results) / MAX_BTN)}",
-                callback_data="buttons"
-            ),
-            InlineKeyboardButton(
-                text="ɴᴇxᴛ »",
-                callback_data=f"next_{req}_{key}_{offset}"
+            files_link += (
+                f"<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}"
+                f"?start=file_{message.chat.id}_{file.file_id}>"
+                f"[{get_size(file.file_size)}] {file.file_name}</a></b>"
             )
-        ]
-    )
-else:
-    if settings['shortlink'] and not await db.has_premium_access(message.from_user.id):
-        btn.insert(
-            0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
-        )
     else:
-        btn.insert(
-            0,
-            [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+        btn = [
+            [
+                InlineKeyboardButton(
+                    text=f"📂 {get_size(file.file_size)} {file.file_name}",
+                    callback_data=f'file#{file.file_id}'
+                )
+            ] for file in files
+        ]
+
+    # Add main channel or shortlink button
+    btn.insert(
+        0,
+        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
+    )
+
+    # Pagination buttons if there is more than 1 page
+    if offset != "":
+        btn.append(
+            [
+                InlineKeyboardButton(
+                    text=f"1/{math.ceil(int(total_results) / MAX_BTN)}",
+                    callback_data="buttons"
+                ),
+                InlineKeyboardButton(
+                    text="ɴᴇxᴛ »",
+                    callback_data=f"next_{req}_{key}_{offset}"
+                )
+            ]
         )
-    imdb = await get_poster(search, file=(files[0]).file_name) if settings["imdb"] else None
-    TEMPLATE = settings['template']
+
+    # IMDB / Caption handling
+    imdb = await get_poster(search, file=(files[0]).file_name) if settings.get("imdb") else None
+    TEMPLATE = settings.get('template')
     if imdb:
         cap = TEMPLATE.format(
             query=search,
@@ -1087,34 +1082,41 @@ else:
             **locals()
         )
     else:
-        cap = f"<b>Hey {message.from_user.mention} 👋🏻\n \n➤ Title : {search} \n➤ Your Files Ready 👇</b>"
+        cap = f"<b>Hey {message.from_user.mention} 👋🏻\n\n➤ Title : {search} \n➤ Your Files Ready 👇</b>"
+
     CAP[key] = cap
-    del_msg = f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>" if settings["auto_delete"] else ''
+    del_msg = (f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ "
+               f"ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> "
+               "ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>") if settings.get("auto_delete") else ''
+
+    # Send message or edit callback query message
     if imdb and imdb.get('poster'):
         await s.delete()
         try:
-            k = await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1024] + files_link + del_msg, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.HTML, quote=True)
-            if settings["auto_delete"]:
+            k = await message.reply_photo(
+                photo=imdb.get('poster'),
+                caption=cap[:1024] + files_link + del_msg,
+                reply_markup=InlineKeyboardMarkup(btn),
+                parse_mode=enums.ParseMode.HTML,
+                quote=True
+            )
+            if settings.get("auto_delete"):
                 await asyncio.sleep(DELETE_TIME)
                 await k.delete()
                 try:
                     await message.delete()
                 except:
                     pass
-        except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
-            pic = imdb.get('poster')
-            poster = pic.replace('.jpg', "._V1_UX360.jpg")
-            k = await message.reply_photo(photo=poster, caption=cap[:1024] + files_link + del_msg, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.HTML, quote=True)
-            if settings["auto_delete"]:
-                await asyncio.sleep(DELETE_TIME)
-                await k.delete()
-                try:
-                    await message.delete()
-                except:
-                    pass
-        except Exception as e:
-            k = await message.reply_text(cap + files_link + del_msg, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML, quote=True)
-            if settings["auto_delete"]:
+        except Exception:
+            # fallback if poster fails
+            k = await message.reply_text(
+                cap + files_link + del_msg,
+                reply_markup=InlineKeyboardMarkup(btn),
+                disable_web_page_preview=True,
+                parse_mode=enums.ParseMode.HTML,
+                quote=True
+            )
+            if settings.get("auto_delete"):
                 await asyncio.sleep(DELETE_TIME)
                 await k.delete()
                 try:
@@ -1122,8 +1124,13 @@ else:
                 except:
                     pass
     else:
-        k = await s.edit_text(cap + files_link + del_msg, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
-        if settings["auto_delete"]:
+        k = await s.edit_text(
+            cap + files_link + del_msg,
+            reply_markup=InlineKeyboardMarkup(btn),
+            disable_web_page_preview=True,
+            parse_mode=enums.ParseMode.HTML
+        )
+        if settings.get("auto_delete"):
             await asyncio.sleep(DELETE_TIME)
             await k.delete()
             try:
