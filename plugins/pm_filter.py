@@ -18,21 +18,34 @@ CAP = {}
 @Client.on_message(filters.private & filters.text & filters.incoming)
 async def pm_search(client, message):
     bot_id = client.me.id
+
+    # Safely get search results
     files, n_offset, total = await get_search_results(message.text)
-    btn = [[
-        InlineKeyboardButton("🗂 ᴄʟɪᴄᴋ ʜᴇʀᴇ 🗂", url=FILMS_LINK)
-    ]]
-    reply_markup=InlineKeyboardMarkup(btn)
+    total = int(total or 0)  # handle None safely
+
+    btn = [[InlineKeyboardButton("🗂 ᴄʟɪᴄᴋ ʜᴇʀᴇ 🗂", url=FILMS_LINK)]]
+    reply_markup = InlineKeyboardMarkup(btn)
+
     if await db.get_pm_search_status(bot_id):
         s = await message.reply(f"<b><i>⚠️ `{message.text}` searching...</i></b>", quote=True)
-        if 'hindi' in message.text.lower() or 'tamil' in message.text.lower() or 'telugu' in message.text.lower() or 'malayalam' in message.text.lower() or 'kannada' in message.text.lower() or 'english' in message.text.lower() or 'gujarati' in message.text.lower(): 
+
+        # Check for specific languages safely
+        text_lower = message.text.lower() if message.text else ""
+        if any(lang in text_lower for lang in ['hindi', 'tamil', 'telugu', 'malayalam', 'kannada', 'english', 'gujarati']):
             return await auto_filter(client, message, s)
+
         await auto_filter(client, message, s)
     else:
-        if int(total) != 0:
-            await message.reply_text(f'<b><i>🤗 ᴛᴏᴛᴀʟ <code>{total}</code> ʀᴇꜱᴜʟᴛꜱ ꜰᴏᴜɴᴅ ɪɴ ᴛʜɪꜱ ɢʀᴏᴜᴘ 👇</i></b>', reply_markup=reply_markup)
+        if total != 0:
+            await message.reply_text(
+                f'<b><i>🤗 ᴛᴏᴛᴀʟ <code>{total}</code> ʀᴇꜱᴜʟᴛꜱ ꜰᴏᴜɴᴅ ɪɴ ᴛʜɪꜱ ɢʀᴏᴜᴘ 👇</i></b>',
+                reply_markup=reply_markup
+            )
         else:
-            await message.reply_text('<b><i>📢 ꜱᴇɴᴅ ᴍᴏᴠɪᴇ ᴏʀ ꜱᴇʀɪᴇꜱ ʀᴇǫᴜᴇꜱᴛ ʜᴇʀᴇ 👇</i></b>', reply_markup=reply_markup)
+            await message.reply_text(
+                '<b><i>📢 ꜱᴇɴᴅ ᴍᴏᴠɪᴇ ᴏʀ ꜱᴇʀɪᴇꜱ ʀᴇǫᴜᴇꜱᴛ ʜᴇʀᴇ 👇</i></b>',
+                reply_markup=reply_markup
+            )
 
 @Client.on_message(filters.group & filters.text & filters.incoming)
 async def group_search(client, message):
@@ -43,33 +56,48 @@ async def group_search(client, message):
             return
     except:
         return
+
     if not await db.get_chat(message.chat.id):
-        total = int(message.chat.members_count)
-        username = f'@{message.chat.username}' if message.chat.username else vp.invite_link
-        await client.send_message(LOG_CHANNEL, script.NEW_GROUP_TXT.format(message.chat.title, message.chat.id, username, total))       
-        await db.add_chat(message.chat.id, message.chat.title)
+        # Safe handling of members_count
+        total = int(getattr(message.chat, "members_count", 0) or 0)
+
+        # Safe handling of username / invite_link
+        username = f'@{message.chat.username}' if getattr(message.chat, "username", None) else getattr(vp, "invite_link", "N/A")
+
+        await client.send_message(
+            LOG_CHANNEL,
+            script.NEW_GROUP_TXT.format(
+                getattr(message.chat, "title", "Unknown"),
+                message.chat.id,
+                username,
+                total
+            )
+        )
+        await db.add_chat(message.chat.id, getattr(message.chat, "title", "Unknown"))
+
     chat_id = message.chat.id
     settings = await get_settings(chat_id)
     user_id = message.from_user.id if message and message.from_user else 0
-    if settings["auto_filter"]:
+
+    if settings.get("auto_filter"):
         if not user_id:
             await message.reply("I'm not working for anonymous admin!")
             return
+
         if message.chat.id == SUPPORT_GROUP:
-            files, offset, total = await get_search_results(message.text)
+            files, offset, total_results = await get_search_results(message.text)
             if files:
-                btn = [[
-                    InlineKeyboardButton("Here", url=FILMS_LINK)
-                ]]
-                await message.reply_text(f'Total {total} results found in this group', reply_markup=InlineKeyboardMarkup(btn))
+                btn = [[InlineKeyboardButton("Here", url=FILMS_LINK)]]
+                await message.reply_text(f'Total {total_results} results found in this group', reply_markup=InlineKeyboardMarkup(btn))
             return
-            
+
         if message.text.startswith("/"):
             return
-            
+
         elif '@admin' in message.text.lower() or '@admins' in message.text.lower():
             if await is_check_admin(client, message.chat.id, message.from_user.id):
                 return
+
             admins = []
             async for member in client.get_chat_members(chat_id=message.chat.id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
                 if not member.user.is_bot:
@@ -78,15 +106,22 @@ async def group_search(client, message):
                         if message.reply_to_message:
                             try:
                                 sent_msg = await message.reply_to_message.forward(member.user.id)
-                                await sent_msg.reply_text(f"#Attention\n★ User: {message.from_user.mention}\n★ Group: {message.chat.title}\n\n★ <a href={message.reply_to_message.link}>Go to message</a>", disable_web_page_preview=True)
+                                await sent_msg.reply_text(
+                                    f"#Attention\n★ User: {message.from_user.mention}\n★ Group: {getattr(message.chat, 'title', 'Unknown')}\n\n★ <a href={message.reply_to_message.link}>Go to message</a>",
+                                    disable_web_page_preview=True
+                                )
                             except:
                                 pass
                         else:
                             try:
                                 sent_msg = await message.forward(member.user.id)
-                                await sent_msg.reply_text(f"#Attention\n★ User: {message.from_user.mention}\n★ Group: {message.chat.title}\n\n★ <a href={message.link}>Go to message</a>", disable_web_page_preview=True)
+                                await sent_msg.reply_text(
+                                    f"#Attention\n★ User: {message.from_user.mention}\n★ Group: {getattr(message.chat, 'title', 'Unknown')}\n\n★ <a href={message.link}>Go to message</a>",
+                                    disable_web_page_preview=True
+                                )
                             except:
                                 pass
+
             hidden_mentions = (f'[\u2064](tg://user?id={user_id})' for user_id in admins)
             await message.reply_text('Report sent!' + ''.join(hidden_mentions))
             return
@@ -96,13 +131,16 @@ async def group_search(client, message):
                 return
             await message.delete()
             return await message.reply('Links not allowed here!')
-        
+
         elif '#request' in message.text.lower():
             if message.from_user.id in ADMINS:
                 return
-            await client.send_message(LOG_CHANNEL, f"#Request\n★ User: {message.from_user.mention}\n★ Group: {message.chat.title}\n\n★ Message: {re.sub(r'#request', '', message.text.lower())}")
+            await client.send_message(
+                LOG_CHANNEL,
+                f"#Request\n★ User: {message.from_user.mention}\n★ Group: {getattr(message.chat, 'title', 'Unknown')}\n\n★ Message: {re.sub(r'#request', '', message.text.lower())}"
+            )
             await message.reply_text("Request sent!")
-            return  
+            return
         else:
             s = await message.reply(f"<b><i>⚠️ `{message.text}` searching...</i></b>")
             await auto_filter(client, message, s)
