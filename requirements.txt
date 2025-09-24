@@ -4,14 +4,14 @@ git+https://github.com/vpcreatz/pyrofork-adv
 # Telegram crypto
 tgcrypto>=1.2.5
 
-# Async MongoDB driver (compatible with pymongo<4 and umongo 3.0.1)
-motor<3
+# Async MongoDB driver (Python 3.11-compatible)
+motor>=3.3,<3.5
 
 # Object-document mapper
 umongo==3.0.1
 marshmallow==3.18.0
 
-# MongoDB Python driver (downgrade to <4 for umongo compatibility)
+# MongoDB Python driver (compatible with umongo 3.0.1)
 pymongo<4
 
 # Timezone support
