@@ -5,13 +5,13 @@ git+https://github.com/vpcreatz/pyrofork-adv
 tgcrypto>=1.2.5
 
 # Async MongoDB driver (Python 3.11-compatible)
-motor>=3.3,<3.5
+motor>=3.5,<4
 
-# Object-document mapper (upgrade to support PyMongo >=4)
-umongo>=3.1
+# Object-document mapper (supports PyMongo >=4.5)
+umongo>=3.2
 marshmallow==3.18.0
 
-# MongoDB Python driver (compatible with motor >=3.3 and umongo >=3.1)
+# MongoDB Python driver (compatible with motor >=3.5 and umongo >=3.2)
 pymongo>=4.5,<5
 
 # Timezone support
