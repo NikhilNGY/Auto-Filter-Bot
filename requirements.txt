@@ -7,12 +7,12 @@ tgcrypto>=1.2.5
 # Async MongoDB driver (Python 3.11-compatible)
 motor>=3.5,<4
 
-# Object-document mapper (supports PyMongo >=4.5)
-umongo>=3.2
+# Object-document mapper
+umongo==3.1.0
 marshmallow==3.18.0
 
-# MongoDB Python driver (compatible with motor >=3.5 and umongo >=3.2)
-pymongo>=4.5,<5
+# MongoDB Python driver (compatible with motor >=3.5 and umongo 3.1.0)
+pymongo>=4.0,<5
 
 # Timezone support
 pytz>=2025.2
