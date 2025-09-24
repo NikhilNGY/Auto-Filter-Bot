@@ -118,19 +118,30 @@ async def group_search(client, message):
 @Client.on_callback_query(filters.regex(r"^next"))
 async def next_page(bot, query):
     ident, req, key, offset = query.data.split("_")
+
     if int(req) not in [query.from_user.id, 0]:
-        return await query.answer(f"Hello {query.from_user.first_name},\nDon't Click Other Results!", show_alert=True)
+        return await query.answer(
+            f"Hello {query.from_user.first_name},\nDon't Click Other Results!", 
+            show_alert=True
+        )
+
     try:
         offset = int(offset)
     except:
         offset = 0
+
     search = BUTTONS.get(key)
     cap = CAP.get(key)
+
     if not search:
-        await query.answer(f"Hello {query.from_user.first_name},\nSend New Request Again!", show_alert=True)
+        await query.answer(
+            f"Hello {query.from_user.first_name},\nSend New Request Again!", 
+            show_alert=True
+        )
         return
 
     files, n_offset, total = await get_search_results(search, offset=offset)
+
     try:
         n_offset = int(n_offset)
     except:
@@ -138,62 +149,90 @@ async def next_page(bot, query):
 
     if not files:
         return
+
     temp.FILES[key] = files
     settings = await get_settings(query.message.chat.id)
-    del_msg = f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>" if settings["auto_delete"] else ''
+
+    del_msg = (
+        f"\n\n<b>⚠️ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ <code>{get_readable_time(DELETE_TIME)}</code> ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs</b>"
+        if settings["auto_delete"] else ''
+    )
+
     files_link = ''
+    btn = []
 
+    # If links mode is enabled
     if settings['links']:
-        btn = []
         for file_num, file in enumerate(files, start=offset+1):
-           files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
-else:
-    btn = [
-        [
-            InlineKeyboardButton(
-                text=f"📂 {get_size(file.file_size)} {file.file_name}",
-                callback_data=f'file#{file.file_id}'
+            files_link += (
+                f"<b>\n\n{file_num}. "
+                f"<a href=https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file.file_id}>"
+                f"[{get_size(file.file_size)}] {file.file_name}</a></b>"
             )
+    else:
+        btn = [
+            [
+                InlineKeyboardButton(
+                    text=f"📂 {get_size(file.file_size)} {file.file_name}",
+                    callback_data=f'file#{file.file_id}'
+                )
+            ]
+            for file in files
         ]
-        for file in files
-    ]
 
-if settings['shortlink'] and not await db.has_premium_access(query.from_user.id):
-    btn.insert(
-        0,
-        [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
-    )
-else:
+    # Insert promotional button at top
     btn.insert(
         0,
         [InlineKeyboardButton("⚔️  ಕನ್ನಡ ಹೊಸ ಮೂವೀಗಳು  ⚔️", url="https://t.me/KR_PICTURE")]
     )
 
+    # Calculate back offset
     if 0 < offset <= MAX_BTN:
         off_set = 0
     elif offset == 0:
         off_set = None
     else:
         off_set = offset - MAX_BTN
-        
+
+    # Pagination buttons
     if n_offset == 0:
         btn.append(
-            [InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"next_{req}_{key}_{off_set}"),
-             InlineKeyboardButton(f"{math.ceil(int(offset) / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}", callback_data="buttons")]
+            [
+                InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"next_{req}_{key}_{off_set}"),
+                InlineKeyboardButton(
+                    f"{math.ceil(offset / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}",
+                    callback_data="buttons"
+                )
+            ]
         )
     elif off_set is None:
         btn.append(
-            [InlineKeyboardButton(f"{math.ceil(int(offset) / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}", callback_data="buttons"),
-             InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"next_{req}_{key}_{n_offset}")])
+            [
+                InlineKeyboardButton(
+                    f"{math.ceil(offset / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}",
+                    callback_data="buttons"
+                ),
+                InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"next_{req}_{key}_{n_offset}")
+            ]
+        )
     else:
         btn.append(
             [
                 InlineKeyboardButton("« ʙᴀᴄᴋ", callback_data=f"next_{req}_{key}_{off_set}"),
-                InlineKeyboardButton(f"{math.ceil(int(offset) / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}", callback_data="buttons"),
+                InlineKeyboardButton(
+                    f"{math.ceil(offset / MAX_BTN) + 1}/{math.ceil(total / MAX_BTN)}",
+                    callback_data="buttons"
+                ),
                 InlineKeyboardButton("ɴᴇxᴛ »", callback_data=f"next_{req}_{key}_{n_offset}")
             ]
         )
-    await query.message.edit_text(cap + files_link + del_msg, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
+
+    await query.message.edit_text(
+        cap + files_link + del_msg,
+        reply_markup=InlineKeyboardMarkup(btn),
+        disable_web_page_preview=True,
+        parse_mode=enums.ParseMode.HTML
+    )
 
 @Client.on_callback_query(filters.regex(r"^languages"))
 async def languages_(client: Client, query: CallbackQuery):
