@@ -6,7 +6,7 @@ umongo==3.0.1
 pymongo==4.3.3
 pytz>=2025.2
 cinemagoer==2023.5.1
-shortzy==1.0.3
+shortzy==0.0.8
 aiohttp==3.9.8
 aiofiles==23.2.1
 telegraph==0.3.0
