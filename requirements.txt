@@ -8,7 +8,7 @@ pytz
 cinemagoer
 shortzy
 uvloop==0.17.0
-aiohttp==3.9.8
+aiohttp==3.9.7
 aiofiles
 telegraph
 speedtest-cli
