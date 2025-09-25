@@ -19,7 +19,7 @@ async def offset_fix(offset, chunksize):
 
 class TGCustomYield:
     def __init__(self):
-        """ A custom method to stream files from telegram.
+        """A custom method to stream files from telegram.
         functions:
             generate_file_properties: returns the properties for a media on a specific message contained in FileId class.
             generate_media_session: returns the media session for the DC that contains the media file on the message.
@@ -47,23 +47,25 @@ class TGCustomYield:
         if media_session is None:
             if data.dc_id != await client.storage.dc_id():
                 media_session = Session(
-                    client, data.dc_id, await Auth(client, data.dc_id, await client.storage.test_mode()).create(),
-                    await client.storage.test_mode(), is_media=True
+                    client,
+                    data.dc_id,
+                    await Auth(
+                        client, data.dc_id, await client.storage.test_mode()
+                    ).create(),
+                    await client.storage.test_mode(),
+                    is_media=True,
                 )
                 await media_session.start()
 
                 for _ in range(3):
                     exported_auth = await client.invoke(
-                        raw.functions.auth.ExportAuthorization(
-                            dc_id=data.dc_id
-                        )
+                        raw.functions.auth.ExportAuthorization(dc_id=data.dc_id)
                     )
 
                     try:
                         await media_session.send(
                             raw.functions.auth.ImportAuthorization(
-                                id=exported_auth.id,
-                                bytes=exported_auth.bytes
+                                id=exported_auth.id, bytes=exported_auth.bytes
                             )
                         )
                     except AuthBytesInvalid:
@@ -75,8 +77,11 @@ class TGCustomYield:
                     raise AuthBytesInvalid
             else:
                 media_session = Session(
-                    client, data.dc_id, await client.storage.auth_key(),
-                    await client.storage.test_mode(), is_media=True
+                    client,
+                    data.dc_id,
+                    await client.storage.auth_key(),
+                    await client.storage.test_mode(),
+                    is_media=True,
                 )
                 await media_session.start()
 
@@ -91,45 +96,49 @@ class TGCustomYield:
         if file_type == FileType.CHAT_PHOTO:
             if file_id.chat_id > 0:
                 peer = raw.types.InputPeerUser(
-                    user_id=file_id.chat_id,
-                    access_hash=file_id.chat_access_hash
+                    user_id=file_id.chat_id, access_hash=file_id.chat_access_hash
                 )
             else:
                 if file_id.chat_access_hash == 0:
-                    peer = raw.types.InputPeerChat(
-                        chat_id=-file_id.chat_id
-                    )
+                    peer = raw.types.InputPeerChat(chat_id=-file_id.chat_id)
                 else:
                     peer = raw.types.InputPeerChannel(
                         channel_id=utils.get_channel_id(file_id.chat_id),
-                        access_hash=file_id.chat_access_hash
+                        access_hash=file_id.chat_access_hash,
                     )
 
             location = raw.types.InputPeerPhotoFileLocation(
                 peer=peer,
                 volume_id=file_id.volume_id,
                 local_id=file_id.local_id,
-                big=file_id.thumbnail_source == ThumbnailSource.CHAT_PHOTO_BIG
+                big=file_id.thumbnail_source == ThumbnailSource.CHAT_PHOTO_BIG,
             )
         elif file_type == FileType.PHOTO:
             location = raw.types.InputPhotoFileLocation(
                 id=file_id.media_id,
                 access_hash=file_id.access_hash,
                 file_reference=file_id.file_reference,
-                thumb_size=file_id.thumbnail_size
+                thumb_size=file_id.thumbnail_size,
             )
         else:
             location = raw.types.InputDocumentFileLocation(
                 id=file_id.media_id,
                 access_hash=file_id.access_hash,
                 file_reference=file_id.file_reference,
-                thumb_size=file_id.thumbnail_size
+                thumb_size=file_id.thumbnail_size,
             )
 
         return location
 
-    async def yield_file(self, media_msg: Message, offset: int, first_part_cut: int,
-                         last_part_cut: int, part_count: int, chunk_size: int) -> Union[str, None]: #pylint: disable=unsubscriptable-object
+    async def yield_file(
+        self,
+        media_msg: Message,
+        offset: int,
+        first_part_cut: int,
+        last_part_cut: int,
+        part_count: int,
+        chunk_size: int,
+    ) -> Union[str, None]:  # pylint: disable=unsubscriptable-object
         client = self.main_bot
         data = await self.generate_file_properties(media_msg)
         media_session = await self.generate_media_session(client, media_msg)
@@ -140,9 +149,7 @@ class TGCustomYield:
 
         r = await media_session.send(
             raw.functions.upload.GetFile(
-                location=location,
-                offset=offset,
-                limit=chunk_size
+                location=location, offset=offset, limit=chunk_size
             ),
         )
 
@@ -162,9 +169,7 @@ class TGCustomYield:
 
                 r = await media_session.send(
                     raw.functions.upload.GetFile(
-                        location=location,
-                        offset=offset,
-                        limit=chunk_size
+                        location=location, offset=offset, limit=chunk_size
                     ),
                 )
 
@@ -181,11 +186,7 @@ class TGCustomYield:
         offset = 0
 
         r = await media_session.send(
-            raw.functions.upload.GetFile(
-                location=location,
-                offset=offset,
-                limit=limit
-            )
+            raw.functions.upload.GetFile(location=location, offset=offset, limit=limit)
         )
 
         if isinstance(r, raw.types.upload.File):
@@ -203,9 +204,7 @@ class TGCustomYield:
 
                 r = await media_session.send(
                     raw.functions.upload.GetFile(
-                        location=location,
-                        offset=offset,
-                        limit=limit
+                        location=location, offset=offset, limit=limit
                     )
                 )
 

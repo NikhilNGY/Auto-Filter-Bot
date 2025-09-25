@@ -38,7 +38,7 @@ I can't find the <b>{}</b> in my database! 🥲
 👉 Google Search and check your spelling is correct.
 👉 Please read the Instructions to get better results.
 👉 Or not been released yet."""
-    
+
     EARN_TXT = """<b>ʜᴏᴡ ᴛᴏ ᴇᴀʀɴ ꜰʀᴏᴍ ᴛʜɪs ʙᴏᴛ
 
 ➥ ɴᴏᴡ ʏᴏᴜ ᴄᴀɴ ᴀʟsᴏ ᴇᴀʀɴ ᴍᴏɴᴇʏ ʙʏ ᴜsɪɴɢ ᴛʜɪꜱ ʙᴏᴛ.
@@ -86,7 +86,7 @@ I can't find the <b>{}</b> in my database! 🥲
     WELCOME_TEXT = """👋 Hello {mention}, Welcome to {title} group! 💞"""
 
     HELP_TXT = """<b>Note - <spoiler>Try each command without any argument to see more details 😹</spoiler></b>"""
-    
+
     ADMIN_COMMAND_TXT = """<b>Here is bot admin commands 👇
 
 /index_channels - to check how many index channel id added
@@ -108,7 +108,7 @@ I can't find the <b>{}</b> in my database! 🥲
 /invite_link - to generate invite link
 /set_pm_search - to do pm search on/off
 /index - to index bot accessible channels</b>"""
-    
+
     USER_COMMAND_TXT = """<b>Here is bot user commands 👇
 
 /start - to check bot alive or not
@@ -122,7 +122,7 @@ I can't find the <b>{}</b> in my database! 🥲
 /id - to check group or channel id
 /set_fsub - to set force subscribe channels
 /remove_fsub - to remove all force subscribe channel</b>"""
-    
+
     SOURCE_TXT = """<b>ʙᴏᴛ ɢɪᴛʜᴜʙ ʀᴇᴘᴏsɪᴛᴏʀʏ -
 
 - ᴛʜɪꜱ ʙᴏᴛ ɪꜱ ᴀɴ ᴏᴘᴇɴ ꜱᴏᴜʀᴄᴇ ᴘʀᴏᴊᴇᴄᴛ.
@@ -156,5 +156,3 @@ I can't find the <b>{}</b> in my database! 🥲
 💢 ᴍᴜsᴛ sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ ᴀғᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ
 
 ‼️ ᴀғᴛᴇʀ sᴇɴᴅɪɴɢ ᴀ sᴄʀᴇᴇɴsʜᴏᴛ ᴘʟᴇᴀsᴇ ɢɪᴠᴇ ᴜs sᴏᴍᴇ ᴛɪᴍᴇ ᴛᴏ ᴀᴅᴅ ʏᴏᴜ ɪɴ ᴛʜᴇ ᴘʀᴇᴍɪᴜᴍ ʟɪsᴛ</i></b>"""
-
-

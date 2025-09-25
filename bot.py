@@ -13,11 +13,23 @@ from database.ia_filterdb import Media
 from database.users_chats_db import db
 from web import web_app
 from info import LOG_CHANNEL, API_ID, API_HASH, BOT_TOKEN, PORT, BIN_CHANNEL, ADMINS
-from utils import temp, get_readable_time, save_group_settings, get_settings, auto_filter, get_search_results, is_check_admin, script, FILMS_LINK
+from utils import (
+    temp,
+    get_readable_time,
+    save_group_settings,
+    get_settings,
+    auto_filter,
+    get_search_results,
+    is_check_admin,
+    script,
+    FILMS_LINK,
+)
+
 
 # ---------------- HTTP Server for UptimeRobot ----------------
 async def ping(request):
     return web.Response(text="OK")
+
 
 async def start_http_server():
     # Add /ping route
@@ -28,15 +40,16 @@ async def start_http_server():
     await site.start()
     print(f"HTTP /ping server started on port {PORT}")
 
+
 # ---------------- Bot Class ----------------
 class Bot(Client):
     def __init__(self):
         super().__init__(
-            name='Auto_Filter_Bot',
+            name="Auto_Filter_Bot",
             api_id=API_ID,
             api_hash=API_HASH,
             bot_token=BOT_TOKEN,
-            plugins={"root": "plugins"}
+            plugins={"root": "plugins"},
         )
 
     async def start(self):
@@ -52,7 +65,9 @@ class Bot(Client):
             with open("restart.txt") as file:
                 chat_id, msg_id = map(int, file.read().split())
             try:
-                await self.edit_message_text(chat_id=chat_id, message_id=msg_id, text="Restarted Successfully!")
+                await self.edit_message_text(
+                    chat_id=chat_id, message_id=msg_id, text="Restarted Successfully!"
+                )
             except:
                 pass
             os.remove("restart.txt")
@@ -70,7 +85,9 @@ class Bot(Client):
 
         # Send startup messages
         try:
-            await self.send_message(chat_id=LOG_CHANNEL, text=f"<b>{me.mention} Restarted! 🤖</b>")
+            await self.send_message(
+                chat_id=LOG_CHANNEL, text=f"<b>{me.mention} Restarted! 🤖</b>"
+            )
         except:
             print("Error - Make sure bot is admin in LOG_CHANNEL, exiting now")
             exit()
@@ -89,19 +106,25 @@ class Bot(Client):
         await super().stop()
         print("Bot Stopped! Bye...")
 
-    async def iter_messages(self: Client, chat_id: Union[int, str], limit: int, offset: int = 0) -> Optional[AsyncGenerator["types.Message", None]]:
+    async def iter_messages(
+        self: Client, chat_id: Union[int, str], limit: int, offset: int = 0
+    ) -> Optional[AsyncGenerator["types.Message", None]]:
         current = offset
         while True:
             new_diff = min(200, limit - current)
             if new_diff <= 0:
                 return
-            messages = await self.get_messages(chat_id, list(range(current, current+new_diff+1)))
+            messages = await self.get_messages(
+                chat_id, list(range(current, current + new_diff + 1))
+            )
             for message in messages:
                 yield message
                 current += 1
 
+
 # ---------------- Run the Bot ----------------
 app = Bot()
+
 
 async def main():
     try:
@@ -111,6 +134,7 @@ async def main():
         await asyncio.Event().wait()
     finally:
         await app.stop()
+
 
 if __name__ == "__main__":
     try:

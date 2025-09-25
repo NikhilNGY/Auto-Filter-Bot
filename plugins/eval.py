@@ -6,12 +6,13 @@ import traceback
 from io import StringIO
 from info import ADMINS
 
+
 @Client.on_message(filters.command("eval") & filters.user(ADMINS))
 async def executor(client, message):
     try:
         code = message.text.split(" ", 1)[1]
     except:
-        return await message.reply('Command Incomplete!\nUsage: /eval your_python_code')
+        return await message.reply("Command Incomplete!\nUsage: /eval your_python_code")
     old_stderr = sys.stderr
     old_stdout = sys.stdout
     redirected_output = sys.stdout = StringIO()
@@ -38,10 +39,10 @@ async def executor(client, message):
     try:
         await message.reply(final_output)
     except MessageTooLong:
-        with open('eval.txt', 'w+') as outfile:
+        with open("eval.txt", "w+") as outfile:
             outfile.write(final_output)
-        await message.reply_document('eval.txt')
-        os.remove('eval.txt')
+        await message.reply_document("eval.txt")
+        os.remove("eval.txt")
 
 
 async def aexec(code, client, message):
@@ -50,4 +51,3 @@ async def aexec(code, client, message):
         + "".join(f"\n {a}" for a in code.split("\n"))
     )
     return await locals()["__aexec"](client, message)
-
