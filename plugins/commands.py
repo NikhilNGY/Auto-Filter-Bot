@@ -1,49 +1,25 @@
+import asyncio
+import datetime
 import os
-from telegraph import upload_file
 import random
 import string
-import asyncio
 from time import time as time_now
-import datetime
-from Script import script
-from pyrogram import Client, filters, enums
+
+from pyrogram import Client, enums, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from database.ia_filterdb import Media, get_file_details, delete_files
+from telegraph import upload_file
+
+from database.ia_filterdb import Media, delete_files, get_file_details
 from database.users_chats_db import db
-from info import (
-    INDEX_CHANNELS,
-    ADMINS,
-    IS_VERIFY,
-    VERIFY_TUTORIAL,
-    VERIFY_EXPIRE,
-    SHORTLINK_API,
-    SHORTLINK_URL,
-    DELETE_TIME,
-    SUPPORT_LINK,
-    UPDATES_LINK,
-    LOG_CHANNEL,
-    PICS,
-    IS_STREAM,
-    PAYMENT_QR,
-    OWNER_USERNAME,
-    REACTIONS,
-    PM_FILE_DELETE_TIME,
-    OWNER_UPI_ID,
-)
-from utils import (
-    get_settings,
-    get_size,
-    is_subscribed,
-    is_check_admin,
-    get_shortlink,
-    get_verify_status,
-    update_verify_status,
-    save_group_settings,
-    temp,
-    get_readable_time,
-    get_wish,
-    get_seconds,
-)
+from info import (ADMINS, DELETE_TIME, INDEX_CHANNELS, IS_STREAM, IS_VERIFY,
+                  LOG_CHANNEL, OWNER_UPI_ID, OWNER_USERNAME, PAYMENT_QR, PICS,
+                  PM_FILE_DELETE_TIME, REACTIONS, SHORTLINK_API, SHORTLINK_URL,
+                  SUPPORT_LINK, UPDATES_LINK, VERIFY_EXPIRE, VERIFY_TUTORIAL)
+from Script import script
+from utils import (get_readable_time, get_seconds, get_settings, get_shortlink,
+                   get_size, get_verify_status, get_wish, is_check_admin,
+                   is_subscribed, save_group_settings, temp,
+                   update_verify_status)
 
 
 @Client.on_message(filters.command("start") & filters.incoming)

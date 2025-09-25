@@ -1,13 +1,15 @@
-import random
 import os
+import random
 import sys
+
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors.exceptions.bad_request_400 import MessageTooLong
-from info import ADMINS, LOG_CHANNEL, PICS, SUPPORT_LINK, UPDATES_LINK
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from database.users_chats_db import db
-from utils import temp, get_settings
+from info import ADMINS, LOG_CHANNEL, PICS, SUPPORT_LINK, UPDATES_LINK
 from Script import script
+from utils import get_settings, temp
 
 
 @Client.on_chat_member_updated(filters.group)

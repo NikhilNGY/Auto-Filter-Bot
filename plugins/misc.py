@@ -1,8 +1,10 @@
-from info import ADMINS
-from speedtest import Speedtest, ConfigRetrievalError
-from pyrogram import Client, filters, enums
-from utils import get_size
 from datetime import datetime
+
+from pyrogram import Client, enums, filters
+from speedtest import ConfigRetrievalError, Speedtest
+
+from info import ADMINS
+from utils import get_size
 
 
 @Client.on_message(filters.command("id"))

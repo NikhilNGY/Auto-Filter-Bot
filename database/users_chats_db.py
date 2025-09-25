@@ -1,27 +1,13 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-from info import (
-    DATABASE_NAME,
-    DATABASE_URL,
-    IMDB_TEMPLATE,
-    WELCOME_TEXT,
-    LINK_MODE,
-    TUTORIAL,
-    SHORTLINK_URL,
-    SHORTLINK_API,
-    SHORTLINK,
-    FILE_CAPTION,
-    IMDB,
-    WELCOME,
-    SPELL_CHECK,
-    PROTECT_CONTENT,
-    AUTO_FILTER,
-    AUTO_DELETE,
-    IS_STREAM,
-    VERIFY_EXPIRE,
-    IS_PM_SEARCH,
-)
-import time
 import datetime
+import time
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from info import (AUTO_DELETE, AUTO_FILTER, DATABASE_NAME, DATABASE_URL,
+                  FILE_CAPTION, IMDB, IMDB_TEMPLATE, IS_PM_SEARCH, IS_STREAM,
+                  LINK_MODE, PROTECT_CONTENT, SHORTLINK, SHORTLINK_API,
+                  SHORTLINK_URL, SPELL_CHECK, TUTORIAL, VERIFY_EXPIRE, WELCOME,
+                  WELCOME_TEXT)
 
 client = AsyncIOMotorClient(DATABASE_URL)
 mydb = client[DATABASE_NAME]

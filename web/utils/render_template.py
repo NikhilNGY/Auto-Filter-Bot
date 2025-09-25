@@ -1,8 +1,10 @@
+import urllib.parse
+
+import aiofiles
+
 from info import BIN_CHANNEL, URL
 from utils import temp
 from web.utils.custom_dl import TGCustomYield
-import urllib.parse
-import aiofiles
 
 
 async def media_watch(message_id):

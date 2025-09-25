@@ -1,13 +1,10 @@
 from pyrogram import Client, emoji
-from pyrogram.types import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    InlineQueryResultCachedDocument,
-    InlineQuery,
-)
+from pyrogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                            InlineQuery, InlineQueryResultCachedDocument)
+
 from database.ia_filterdb import get_search_results
+from info import CACHE_TIME, FILE_CAPTION, SUPPORT_LINK, UPDATES_LINK
 from utils import get_size, temp
-from info import CACHE_TIME, SUPPORT_LINK, UPDATES_LINK, FILE_CAPTION
 
 cache_time = CACHE_TIME
 
