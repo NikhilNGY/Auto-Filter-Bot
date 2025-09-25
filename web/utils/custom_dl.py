@@ -1,6 +1,6 @@
 import math
 from io import BytesIO
-from typing import Union, AsyncGenerator
+from typing import AsyncGenerator, Union
 
 from pyrogram import Client, raw, utils
 from pyrogram.errors import AuthBytesInvalid
@@ -55,7 +55,9 @@ class TGCustomYield:
                 media_session = Session(
                     client,
                     data.dc_id,
-                    await Auth(client, data.dc_id, await client.storage.test_mode()).create(),
+                    await Auth(
+                        client, data.dc_id, await client.storage.test_mode()
+                    ).create(),
                     await client.storage.test_mode(),
                     is_media=True,
                 )
@@ -152,7 +154,9 @@ class TGCustomYield:
         current_part = 1
         while current_part <= part_count:
             r = await media_session.send(
-                raw.functions.upload.GetFile(location=location, offset=offset, limit=chunk_size)
+                raw.functions.upload.GetFile(
+                    location=location, offset=offset, limit=chunk_size
+                )
             )
             if not isinstance(r, raw.types.upload.File) or not r.bytes:
                 break
@@ -185,7 +189,9 @@ class TGCustomYield:
 
         while True:
             r = await media_session.send(
-                raw.functions.upload.GetFile(location=location, offset=offset, limit=limit)
+                raw.functions.upload.GetFile(
+                    location=location, offset=offset, limit=limit
+                )
             )
             if not isinstance(r, raw.types.upload.File) or not r.bytes:
                 break
