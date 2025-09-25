@@ -5,6 +5,7 @@ import time
 from pyrogram import Client, enums, filters
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from urllib.parse import urlparse
 
 from database.ia_filterdb import save_file
 from info import ADMINS, INDEX_EXTENSIONS
@@ -38,14 +39,23 @@ async def send_for_index(bot, message):
     i = await message.reply("Forward last message or send last message link.")
     msg = await bot.listen(chat_id=message.chat.id, user_id=message.from_user.id)
     await i.delete()
-    if msg.text and msg.text.startswith("https://t.me"):
+    if msg.text:
         try:
-            msg_link = msg.text.split("/")
-            last_msg_id = int(msg_link[-1])
-            chat_id = msg_link[-2]
-            if chat_id.isnumeric():
-                chat_id = int(("-100" + chat_id))
-        except:
+            parsed = urlparse(msg.text)
+            if (
+                parsed.scheme == "https"
+                and parsed.netloc == "t.me"
+                and parsed.path
+                and len(parsed.path.strip("/").split("/")) >= 2
+            ):
+                path_components = parsed.path.strip("/").split("/")
+                chat_id = path_components[-2]
+                last_msg_id = int(path_components[-1])
+                if chat_id.isnumeric():
+                    chat_id = int(("-100" + chat_id))
+            else:
+                raise ValueError("Invalid t.me link structure")
+        except Exception:
             await message.reply("Invalid message link!")
             return
     elif msg.forward_from_chat and msg.forward_from_chat.type == enums.ChatType.CHANNEL:
