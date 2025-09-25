@@ -1,0 +1,55 @@
+name: Lint & Auto-Format
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  flake8:
+    name: Flake8 Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - run: pip install flake8
+      - run: flake8 . --count --max-complexity=10 --max-line-length=120 --statistics
+
+  isort:
+    name: isort Auto-Fix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - run: pip install isort
+      - run: isort .
+      - run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Auto-fix imports with isort"
+          git push
+
+  black:
+    name: Black Auto-Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - run: pip install black
+      - run: black .
+      - run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Auto-format code with Black"
+          git push
