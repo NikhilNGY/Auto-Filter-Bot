@@ -1,11 +1,11 @@
 import asyncio
 import re
 import time
+from urllib.parse import urlparse
 
 from pyrogram import Client, enums, filters
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from urllib.parse import urlparse
 
 from database.ia_filterdb import save_file
 from info import ADMINS, INDEX_EXTENSIONS
