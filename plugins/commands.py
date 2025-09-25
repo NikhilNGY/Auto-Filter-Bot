@@ -11,15 +11,41 @@ from telegraph import upload_file
 
 from database.ia_filterdb import Media, delete_files, get_file_details
 from database.users_chats_db import db
-from info import (ADMINS, DELETE_TIME, INDEX_CHANNELS, IS_STREAM, IS_VERIFY,
-                  LOG_CHANNEL, OWNER_UPI_ID, OWNER_USERNAME, PAYMENT_QR, PICS,
-                  PM_FILE_DELETE_TIME, REACTIONS, SHORTLINK_API, SHORTLINK_URL,
-                  SUPPORT_LINK, UPDATES_LINK, VERIFY_EXPIRE, VERIFY_TUTORIAL)
+from info import (
+    ADMINS,
+    DELETE_TIME,
+    INDEX_CHANNELS,
+    IS_STREAM,
+    IS_VERIFY,
+    LOG_CHANNEL,
+    OWNER_UPI_ID,
+    OWNER_USERNAME,
+    PAYMENT_QR,
+    PICS,
+    PM_FILE_DELETE_TIME,
+    REACTIONS,
+    SHORTLINK_API,
+    SHORTLINK_URL,
+    SUPPORT_LINK,
+    UPDATES_LINK,
+    VERIFY_EXPIRE,
+    VERIFY_TUTORIAL,
+)
 from Script import script
-from utils import (get_readable_time, get_seconds, get_settings, get_shortlink,
-                   get_size, get_verify_status, get_wish, is_check_admin,
-                   is_subscribed, save_group_settings, temp,
-                   update_verify_status)
+from utils import (
+    get_readable_time,
+    get_seconds,
+    get_settings,
+    get_shortlink,
+    get_size,
+    get_verify_status,
+    get_wish,
+    is_check_admin,
+    is_subscribed,
+    save_group_settings,
+    temp,
+    update_verify_status,
+)
 
 
 @Client.on_message(filters.command("start") & filters.incoming)

@@ -1,6 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import (ChatPermissions, InlineKeyboardButton,
-                            InlineKeyboardMarkup)
+from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 
 from utils import is_check_admin
 

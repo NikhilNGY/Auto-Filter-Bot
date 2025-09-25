@@ -5,22 +5,51 @@ from datetime import datetime, timedelta
 from time import time as time_now
 
 from pyrogram import Client, enums, filters
-from pyrogram.errors.exceptions.bad_request_400 import (MediaEmpty,
-                                                        PhotoInvalidDimensions,
-                                                        WebpageMediaEmpty)
-from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
-                            InlineKeyboardMarkup, InputMediaPhoto)
+from pyrogram.errors.exceptions.bad_request_400 import (
+    MediaEmpty,
+    PhotoInvalidDimensions,
+    WebpageMediaEmpty,
+)
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InputMediaPhoto,
+)
 
 from database.ia_filterdb import Media, delete_files, get_search_results
 from database.users_chats_db import db
-from info import (ADMINS, BIN_CHANNEL, DELETE_TIME, FILMS_LINK, IS_STREAM,
-                  LANGUAGES, LOG_CHANNEL, MAX_BTN, OWNER_UPI_ID,
-                  OWNER_USERNAME, PAYMENT_QR, QUALITY, SUPPORT_GROUP,
-                  SUPPORT_LINK, UPDATES_LINK, URL)
+from info import (
+    ADMINS,
+    BIN_CHANNEL,
+    DELETE_TIME,
+    FILMS_LINK,
+    IS_STREAM,
+    LANGUAGES,
+    LOG_CHANNEL,
+    MAX_BTN,
+    OWNER_UPI_ID,
+    OWNER_USERNAME,
+    PAYMENT_QR,
+    QUALITY,
+    SUPPORT_GROUP,
+    SUPPORT_LINK,
+    UPDATES_LINK,
+    URL,
+)
 from Script import script
-from utils import (get_poster, get_readable_time, get_settings, get_shortlink,
-                   get_size, get_wish, is_check_admin, is_subscribed,
-                   save_group_settings, temp)
+from utils import (
+    get_poster,
+    get_readable_time,
+    get_settings,
+    get_shortlink,
+    get_size,
+    get_wish,
+    is_check_admin,
+    is_subscribed,
+    save_group_settings,
+    temp,
+)
 
 BUTTONS = {}
 CAP = {}
