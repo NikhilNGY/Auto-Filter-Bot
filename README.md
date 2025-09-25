@@ -5,6 +5,9 @@
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
+
+[![Flake8 Check](https://github.com/NikhilNGY/Auto-Filter-Bot/actions/workflows/lint.yml/badge.svg?job=flake8)](https://github.com/NikhilNGY/Auto-Filter-Bot/actions/workflows/lint.yml)
+[![isort + Black Auto-Fix](https://github.com/NikhilNGY/Auto-Filter-Bot/actions/workflows/lint.yml/badge.svg?job=format)](https://github.com/NikhilNGY/Auto-Filter-Bot/actions/workflows/lint.yml)
 ---
 
 ## Demo
