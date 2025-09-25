@@ -1,6 +1,7 @@
-from pyrogram import Client, filters
 import requests
 from config import REVIEWBOT_URL
+from pyrogram import Client, filters
+
 
 @Client.on_message(filters.command("fixcode") & filters.private)
 async def fix_code(client, message):
@@ -26,7 +27,7 @@ async def fix_code(client, message):
         if fixed_code:
             await message.reply_text(
                 f"✅ Corrected code:\n```python\n{fixed_code}\n```",
-                parse_mode="markdown"
+                parse_mode="markdown",
             )
         else:
             await message.reply_text("⚠️ Reviewbot could not provide a fix.")
