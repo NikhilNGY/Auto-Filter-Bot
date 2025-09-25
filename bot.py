@@ -1,7 +1,6 @@
 import asyncio
 import os
 import time
-import plugins 
 from typing import AsyncGenerator, Optional, Union
 
 from aiohttp import web
@@ -9,6 +8,7 @@ from pyrogram import Client, enums, types
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+import plugins
 from database.ia_filterdb import Media
 from database.users_chats_db import db
 from info import ADMINS, API_HASH, API_ID, BIN_CHANNEL, BOT_TOKEN, LOG_CHANNEL, PORT
